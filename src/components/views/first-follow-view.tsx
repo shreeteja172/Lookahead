@@ -31,7 +31,7 @@ export function FirstFollowView() {
           />
         }
       />
-      {!a ? <NeedsGrammar /> : mode === "final" ? <FinalSets /> : <StepMode />}
+      {!a ? <NeedsGrammar /> : mode === "final" ? <FinalSets /> : <FirstFollowReplay />}
     </>
   );
 }
@@ -169,7 +169,7 @@ function StepCard({ step, active }: { step: SetStep; active?: boolean }) {
   );
 }
 
-function StepMode() {
+export function FirstFollowReplay() {
   const a = useAnalysis()!;
   const g = a.grammar;
   const steps = a.ff.steps;
