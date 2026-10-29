@@ -1,26 +1,172 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/*
+ * Design tokens. Dark is the default; [data-theme="light"] on <html> switches.
+ * Semantic colours are shared by every view so terminals, nonterminals,
+ * states, parser methods, conflicts and acceptance always look the same.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0b0d10;
+  --bg-elevated: #111419;
+  --panel: #14181e;
+  --panel-2: #191e25;
+  --border: #242a33;
+  --border-strong: #323a46;
+  --fg: #e6e9ee;
+  --fg-muted: #9aa3b2;
+  --fg-subtle: #6b7484;
+  --accent: #7c9cff;
+  --accent-fg: #0b0d10;
+  --ring: #7c9cff;
+
+  --terminal: #f5c26b;
+  --nonterminal: #7dd3fc;
+  --state: #c4b5fd;
+  --epsilon: #f0abfc;
+  --end: #fda4af;
+
+  --slr: #818cf8;
+  --clr: #d08cff;
+  --lalr: #2dd4bf;
+
+  --shift: #60a5fa;
+  --reduce: #fbbf24;
+  --accept: #4ade80;
+  --conflict: #f87171;
+  --warning: #fbbf24;
+  --info: #7dd3fc;
+
+  --conflict-bg: rgba(248, 113, 113, 0.12);
+  --accept-bg: rgba(74, 222, 128, 0.12);
+  --highlight-bg: rgba(124, 156, 255, 0.16);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f6f7f9;
+  --bg-elevated: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f1f3f6;
+  --border: #e2e6ec;
+  --border-strong: #cdd3dc;
+  --fg: #141820;
+  --fg-muted: #4f5868;
+  --fg-subtle: #7b8494;
+  --accent: #3b5bdb;
+  --accent-fg: #ffffff;
+  --ring: #3b5bdb;
+
+  --terminal: #b45309;
+  --nonterminal: #0369a1;
+  --state: #6d28d9;
+  --epsilon: #a21caf;
+  --end: #be123c;
+
+  --slr: #4f46e5;
+  --clr: #9333ea;
+  --lalr: #0f766e;
+
+  --shift: #2563eb;
+  --reduce: #b45309;
+  --accept: #15803d;
+  --conflict: #dc2626;
+  --warning: #b45309;
+  --info: #0369a1;
+
+  --conflict-bg: rgba(220, 38, 38, 0.08);
+  --accept-bg: rgba(21, 128, 61, 0.08);
+  --highlight-bg: rgba(59, 91, 219, 0.1);
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-ring: var(--ring);
+  --color-terminal: var(--terminal);
+  --color-nonterminal: var(--nonterminal);
+  --color-state: var(--state);
+  --color-epsilon: var(--epsilon);
+  --color-end: var(--end);
+  --color-slr: var(--slr);
+  --color-clr: var(--clr);
+  --color-lalr: var(--lalr);
+  --color-shift: var(--shift);
+  --color-reduce: var(--reduce);
+  --color-accept: var(--accept);
+  --color-conflict: var(--conflict);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-conflict-bg: var(--conflict-bg);
+  --color-accept-bg: var(--accept-bg);
+  --color-highlight-bg: var(--highlight-bg);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* React Flow theming */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: var(--border-strong);
+  --xy-edge-label-background-color: var(--panel);
+  --xy-edge-label-color: var(--fg);
+  --xy-controls-button-background-color: var(--panel);
+  --xy-controls-button-background-color-hover: var(--panel-2);
+  --xy-controls-button-color: var(--fg);
+  --xy-controls-button-border-color: var(--border);
+  --xy-minimap-background-color: var(--panel);
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--bg) 70%, transparent);
+  --xy-node-border-radius: 10px;
+}
+.react-flow__attribution {
+  display: none;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.2s ease-out infinite;
 }
