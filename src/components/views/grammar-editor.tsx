@@ -115,7 +115,7 @@ export function GrammarEditor({
   }, [focusLine]);
 
   return (
-    <div className="relative flex h-[420px] overflow-hidden rounded-lg border border-border bg-bg-elevated font-mono text-[13px] leading-6 focus-within:border-accent/60">
+    <div className="relative flex h-[300px] overflow-hidden rounded-lg sm:h-[420px] border border-border bg-bg-elevated font-mono text-[13px] leading-6 focus-within:border-accent/60">
       <div className="relative w-11 shrink-0 overflow-hidden border-r border-border bg-panel-2 text-right text-fg-subtle select-none">
         <div ref={gutterRef} className="py-3 pr-2">
           {lines.map((_, i) => {

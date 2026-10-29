@@ -21,7 +21,7 @@ export function PageHeader({
         <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
         {description && <p className="mt-1 max-w-3xl text-sm text-fg-muted">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }

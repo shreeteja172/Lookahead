@@ -195,7 +195,7 @@ export function FirstFollowReplay() {
   if (current?.source.type === "follow") sourceSymbols.add(current.source.symbol);
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Panel>
         <div className="flex flex-wrap items-center gap-3 px-4 py-3">
           <StepperControls s={s} label={<>step {s.index} / {steps.length}</>} />

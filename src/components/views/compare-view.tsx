@@ -51,7 +51,7 @@ export function CompareView() {
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Panel>
           <PanelHeader icon={<Scale />} title="Grammar level — table construction" />
           <div className="grid gap-px overflow-hidden bg-border md:grid-cols-3">
@@ -101,7 +101,7 @@ export function CompareView() {
             icon={<Rows3 />}
             title="Input level — parsing traces"
             actions={
-              <Input value={input} onChange={(e) => setInput(e.target.value)} className="w-72 font-mono" placeholder="input tokens" spellCheck={false} />
+              <Input value={input} onChange={(e) => setInput(e.target.value)} className="w-full font-mono sm:w-72" placeholder="input tokens" spellCheck={false} />
             }
           />
           {tok.errors.length ? (

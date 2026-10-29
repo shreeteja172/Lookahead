@@ -125,7 +125,7 @@ function CollectionReplay({ analysis, automaton, lr1 }: { analysis: Analysis; au
   const sourceKey = cur.kind === "closure" ? coreKey(built[cur.step.fromIndex] ?? { prod: -1, dot: -1 }) : null;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Panel className="px-4 py-3">
         <StepperControls s={s} />
       </Panel>
@@ -257,7 +257,7 @@ function TableReplay({ analysis }: { analysis: Analysis }) {
   const method = useStudio((st) => st.method);
   const setMethod = useStudio((st) => st.setMethod);
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <div>
         <Segmented value={method} onChange={setMethod} options={METHOD_OPTIONS} />
       </div>
@@ -392,7 +392,7 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
   const totalMerged = groups.filter((x) => x.clrStates.length > 1).length;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Panel className="px-4 py-3">
         <StepperControls s={s} label={<>core {s.index + 1} / {groups.length}</>} />
       </Panel>

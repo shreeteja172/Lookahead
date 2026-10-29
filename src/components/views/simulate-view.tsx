@@ -120,7 +120,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
   const conflictFree = table.conflicts.length === 0;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Panel>
         <div className="flex flex-wrap items-center gap-3 px-4 py-3">
           <StepperControls s={s} />

@@ -104,7 +104,7 @@ export function PanelHeader({
           {description && <p className="mt-0.5 text-xs text-fg-muted">{description}</p>}
         </div>
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-1.5">{actions}</div>}
+      {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">{actions}</div>}
     </div>
   );
 }
@@ -127,7 +127,7 @@ export function Segmented<T extends string>({
   size?: "sm" | "md";
 }) {
   return (
-    <div role="tablist" className={cn("inline-flex rounded-lg border border-border bg-panel-2 p-0.5", className)}>
+    <div role="tablist" className={cn("inline-flex min-w-0 max-w-full overflow-x-auto rounded-lg border border-border bg-panel-2 p-0.5", className)}>
       {options.map((o) => (
         <button
           key={o.value}
