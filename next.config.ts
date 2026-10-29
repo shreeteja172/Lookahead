@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
+// The studio is a client-side application (the parsing engine runs in the
+// browser), so Cache Components / partial prefetching are not used.
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
