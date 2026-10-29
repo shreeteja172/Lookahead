@@ -101,14 +101,14 @@ A conflict-free table proves the grammar is in that class, and LR(1) grammars ar
 
 ## Testing
 
-`npm test` runs 78 tests, including:
+`npm test` runs 79 tests, including:
 
 * grammar tokenization, validation, augmentation and error lines;
 * FIRST/FOLLOW for Dragon book Example 4.30, left recursion and nullable chains;
 * LR(0) `I0` and GOTO, and LR(1) closure with propagated and nullable-suffix lookaheads;
 * the **exact SLR table of Dragon Fig. 4.37** (12 states), the **CLR table for `S → C C`** (10 states) and its **LALR merge** into 7 states;
 * `S → L = R | R` (SLR conflict on `=`, LR(1) with 14 states, LALR with 10), and `S → a A d | b B d | a B e | b A e` (LR(1), but LALR merging introduces reduce-reduce conflicts);
-* ambiguous grammars and dangling-else detection;
+* ambiguous grammars (`E → E + E`, `S → S S`) and dangling-else detection;
 * the **simulation trace of Dragon Fig. 4.38**, empty input, invalid tokens, conflict policies and the step limit;
 * every sample grammar's conflict-freedom, state counts and sample inputs;
 * share-link decoding and every export format.

@@ -167,8 +167,11 @@ function likelyCause(
     return `FOLLOW sets are too coarse: ${c.terminal} can follow ${[...new Set(reduce.map((p) => p.lhs))].join("/")} somewhere in the grammar, but not in the context of state ${c.state}. Canonical LR(1) tracks the exact lookahead and has no conflict here.`;
   }
   if (c.type === "shift-reduce") {
-    const amb = reduce.find((p) => p.rhs.length >= 3 && p.rhs[0] === p.lhs && p.rhs[p.rhs.length - 1] === p.lhs);
+    const amb = reduce.find((p) => p.rhs.length >= 2 && p.rhs[0] === p.lhs && p.rhs[p.rhs.length - 1] === p.lhs);
     if (amb && shift.some((s) => s.p.lhs === amb.lhs)) {
+      if (amb.rhs.length === 2) {
+        return `The production ${formatProduction(amb)} is ambiguous: a sequence ${amb.lhs} ${amb.lhs} ${amb.lhs} can be grouped as (${amb.lhs} ${amb.lhs}) ${amb.lhs} or ${amb.lhs} (${amb.lhs} ${amb.lhs}). Making the repetition one-sided (e.g. ${amb.lhs} → ${amb.lhs} X | X) removes this.`;
+      }
       return `The production ${formatProduction(amb)} is ambiguous: an expression like ${amb.lhs} ${amb.rhs[1]} ${amb.lhs} ${c.terminal} ${amb.lhs} can be grouped either way, because operator precedence/associativity is not encoded in the grammar. Stratifying the grammar into precedence levels removes this.`;
     }
     for (const r of reduce) {

@@ -167,6 +167,13 @@ describe("grammar classes", () => {
     expect(d.likelyCause).toMatch(/ambiguous/);
   });
 
+  it("recognises ambiguous concatenation A → A A", () => {
+    const a = analyze("S -> id ; | S S");
+    for (const m of ["SLR", "CLR", "LALR"] as const) expect(a.tables[m].conflicts.length).toBeGreaterThan(0);
+    const d = a.diagnoses.find((x) => x.conflict.method === "CLR")!;
+    expect(d.likelyCause).toMatch(/\(S S\) S or S \(S S\)/);
+  });
+
   it("detects the dangling-else pattern", () => {
     const a = analyze("S -> i S e S | i S | a");
     const d = a.diagnoses.find((x) => x.conflict.method === "LALR")!;
