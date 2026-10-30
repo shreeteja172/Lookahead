@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, CircleCheck, CircleX, Copy, FileJson, FileSpreadsheet, ListTree, OctagonAlert, Play, TriangleAlert } from "lucide-react";
+import { DerivationList } from "./learn-view";
+import { Check, CircleCheck, CircleX, Copy, FileJson, FileSpreadsheet, OctagonAlert, Play, TriangleAlert } from "lucide-react";
 import {
   END,
   formatProduction,
+  rightmostDerivation,
   simulate,
   tokenizeInput,
   type Analysis,
@@ -17,7 +19,8 @@ import {
 import { useAnalysis, useStudio } from "@/lib/studio/store";
 import { traceToCSV, traceToText } from "@/lib/studio/export";
 import { Badge, Button, Input, Panel, PanelHeader, Segmented, Select } from "@/components/ui/primitives";
-import { NeedsGrammar, PageHeader } from "@/components/studio/page-header";
+import { NeedsGrammar, PageHeader, StepNav } from "@/components/studio/page-header";
+import { ConceptNote } from "@/components/studio/concept-note";
 import { ActionChip, METHOD_META, Sym } from "@/components/studio/symbols";
 import { StepperControls, useStepper } from "@/components/studio/stepper";
 import { forestAfter, ParseForest } from "@/components/studio/parse-tree";
@@ -51,10 +54,26 @@ export function SimulateView() {
   return (
     <>
       <PageHeader
-        title="Simulation Studio"
-        description="Runs the table-driven shift-reduce algorithm against the selected generated table. Each row shows the configuration before the action is applied."
+        step={5}
+        title="Parse an input"
+        description="Runs the shift-reduce parser on your input using the selected table. Each trace row shows the stack and input before the action is applied."
         actions={<Segmented value={method} onChange={setMethod} options={METHOD_OPTIONS} />}
       />
+      <ConceptNote id="simulate" title="The LR parsing loop">
+        <p>The stack holds states (with the grammar symbols that led to them). At each step, with state s on top and lookahead a:</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <b>shift t</b>: push a and state t, advance the input;
+          </li>
+          <li>
+            <b>reduce A → β</b>: pop |β| states, exposing state u, then push A and state GOTO[u, A];
+          </li>
+          <li>
+            <b>accept</b>: done; <b>empty cell</b>: syntax error.
+          </li>
+        </ul>
+        <p className="mt-2">The reductions, read in reverse, form the rightmost derivation of the input, shown below the parse tree.</p>
+      </ConceptNote>
       <Panel className="mb-4">
         <div className="flex flex-wrap items-center gap-3 p-3">
           <label className="flex min-w-0 flex-1 items-center gap-2">
@@ -96,6 +115,7 @@ export function SimulateView() {
         </div>
       </Panel>
       {result && <Run key={`${method}|${policy}|${result.tokens.join(" ")}`} analysis={a} result={result} method={method} />}
+      <StepNav step={5} />
     </>
   );
 }
@@ -107,6 +127,13 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
   const s = useStepper(result.steps.length, { speedMs: 650 });
   const step = result.steps[s.index];
   const atEnd = s.index === result.steps.length - 1;
+  const derivation = React.useMemo(() => {
+    const steps = rightmostDerivation(g, result);
+    return steps ? { steps } : null;
+  }, [g, result]);
+  const nonterminals = React.useMemo(() => new Set(g.nonterminals), [g]);
+  // Reductions already applied before the current step (plus the current one once accepted).
+  const reductionsDone = result.steps.slice(0, s.index).filter((x) => x.kind === "reduce").length;
   const forest = React.useMemo(() => forestAfter(g, result.steps, s.index + (atEnd && result.outcome === "accepted" ? 1 : 0)), [g, result, s.index, atEnd]);
   const traceRef = React.useRef<HTMLDivElement>(null);
   const [copied, setCopied] = React.useState(false);
@@ -217,24 +244,18 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
               <div>
                 <div className="font-medium mb-1.5 text-xs text-fg-muted">Stack (bottom → top)</div>
                 <div className="flex flex-wrap items-end gap-1">
-                  <AnimatePresence initial={false}>
-                    {step.stack.map((e, i) => (
-                      <motion.div
-                        key={`${i}-${e.state}-${e.symbol}`}
-                        layout
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className={cn(
-                          "flex min-w-9 flex-col items-center rounded-md border px-1.5 py-1",
-                          i === step.stack.length - 1 ? "border-accent bg-highlight-bg" : "border-border bg-panel-2",
-                        )}
-                      >
-                        <span className="font-mono text-[0.75rem]">{e.symbol ? <Sym s={e.symbol} /> : <span className="text-fg-subtle">⊥</span>}</span>
-                        <span className="font-mono text-[0.6875rem] font-bold text-fg">{e.state}</span>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                  {step.stack.map((e, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "flex min-w-9 flex-col items-center rounded-md border px-1.5 py-1",
+                        i === step.stack.length - 1 ? "border-accent bg-highlight-bg" : "border-border bg-panel-2",
+                      )}
+                    >
+                      <span className="font-mono text-[0.8125rem]">{e.symbol ? <Sym s={e.symbol} /> : <span className="text-fg-subtle">⊥</span>}</span>
+                      <span className="font-mono text-[0.75rem] font-semibold text-fg">{e.state}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <div>
@@ -272,7 +293,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
                     </React.Fragment>
                   )) : <span className="text-danger">error</span>}
                 </div>
-                <p className="text-xs text-fg-muted">{step.description}</p>
+                <p className="text-sm text-fg-muted">{step.description}</p>
                 {step.kind === "reduce" && step.actions[0]?.type === "reduce" && (
                   <p className="mt-1.5 font-mono text-xs">
                     handle: <span className="text-reduce">{formatProduction(g.productions[step.actions[0].prod])}</span>
@@ -283,9 +304,24 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
             </div>
           </Panel>
           <Panel>
-            <PanelHeader icon={<ListTree />} title="Parse tree" description="Built bottom-up: shifts add leaves, reductions add a parent over the handle." />
+            <PanelHeader title="Parse tree" description="Built bottom-up: shifts add leaves, reductions add a parent over the handle." />
             <div className="p-3">
               <ParseForest forest={forest} grammar={g} />
+            </div>
+          </Panel>
+          <Panel>
+            <PanelHeader
+              title="Rightmost derivation"
+              description="Read from the bottom up, each reduction undoes one step of the derivation. The underlined nonterminal is the one rewritten next."
+            />
+            <div className="p-4">
+              {derivation ? (
+                <DerivationList steps={derivation.steps} nonterminals={nonterminals} activeFrom={derivation.steps.length - 1 - reductionsDone} />
+              ) : (
+                <p className="text-sm text-fg-muted">
+                  {result.outcome === "accepted" ? "" : "Only accepted inputs have a derivation; this input is not in the language."}
+                </p>
+              )}
             </div>
           </Panel>
         </div>
