@@ -6,20 +6,20 @@ Lookahead takes any context-free grammar, builds **SLR(1)**, **canonical LR(1)**
 
 ## Quick start
 
-Requires Node.js 20+ (developed on Node 24).
+Requires Node.js 20+ (developed on Node 24) and pnpm 11. With Corepack enabled (`corepack enable`), the pinned pnpm version is used automatically.
 
 ```bash
-npm install
-npm run dev          # http://localhost:3000
+pnpm install
+pnpm dev             # http://localhost:3000
 ```
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Development server |
-| `npm test` | Engine and studio test-suite (Vitest) |
-| `npm run typecheck` | TypeScript, no emit |
-| `npm run lint` | ESLint |
-| `npm run build && npm start` | Production build and server |
+| `pnpm dev` | Development server |
+| `pnpm test` | Engine and studio test-suite (Vitest) |
+| `pnpm typecheck` | TypeScript, no emit |
+| `pnpm lint` | ESLint |
+| `pnpm build && pnpm start` | Production build and server |
 
 ## Pages
 
@@ -107,7 +107,7 @@ A conflict-free table proves the grammar is in that class, and LR(1) grammars ar
 
 ## Testing
 
-`npm test` runs 82 tests, including:
+`pnpm test` runs 82 tests, including:
 
 * grammar tokenization, validation, augmentation and error lines;
 * FIRST/FOLLOW for Dragon book Example 4.30, left recursion and nullable chains;
