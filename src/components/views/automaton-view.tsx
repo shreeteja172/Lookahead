@@ -5,7 +5,8 @@ import { Eye, EyeOff, Search, X } from "lucide-react";
 import { formatItem, type ParserMethod } from "@/lib/engine";
 import { useAnalysis, useStudio } from "@/lib/studio/store";
 import { Badge, Button, Input, Panel, Segmented } from "@/components/ui/primitives";
-import { NeedsGrammar, PageHeader } from "@/components/studio/page-header";
+import { NeedsGrammar, PageHeader, StepNav } from "@/components/studio/page-header";
+import { ConceptNote, Notation } from "@/components/studio/concept-note";
 import { StateDetails } from "@/components/studio/state-details";
 import { METHOD_META } from "@/components/studio/symbols";
 import { AutomatonGraph } from "./automaton-graph";
@@ -71,14 +72,9 @@ export function AutomatonView() {
   return (
     <>
       <PageHeader
-        title="LR Automaton"
-        description={
-          <>
-            The canonical collection of item sets as a state machine. Nodes are real parser states, edges are GOTO transitions (
-            <span className="text-terminal">terminals</span> / <span className="text-nonterminal">nonterminals</span>). Click a state for its full
-            item set.
-          </>
-        }
+        step={3}
+        title="LR automaton"
+        description="Each box is a parser state (a set of items); each arrow is a GOTO transition on the symbol it is labelled with. Click a state to inspect it."
         actions={
           <Segmented
             value={method}
@@ -90,6 +86,24 @@ export function AutomatonView() {
           />
         }
       />
+      <ConceptNote id="automaton" title="Items, CLOSURE and GOTO">
+        <p>
+          An <b>item</b> such as <Notation>E → E • + T</Notation> is a production with a dot marking how much of it has been recognised. LR(1) items add a
+          lookahead: <Notation>[E → E • + T, $]</Notation>.
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <b>CLOSURE</b>: whenever the dot is before a nonterminal B, add every <Notation>B → • γ</Notation> (shown as closure items).
+          </li>
+          <li>
+            <b>GOTO(I, X)</b>: move the dot over X in the items of I that allow it, then take the closure. That set is the next state.
+          </li>
+        </ul>
+        <p className="mt-2">
+          SLR uses the LR(0) collection; CLR uses LR(1) items, which often needs more states; LALR merges LR(1) states that have the same items
+          once lookaheads are ignored.
+        </p>
+      </ConceptNote>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel className="flex h-[70vh] min-h-[480px] flex-col overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
@@ -168,6 +182,7 @@ export function AutomatonView() {
           )}
         </Panel>
       </div>
+      <StepNav step={3} />
     </>
   );
 }

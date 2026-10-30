@@ -5,7 +5,8 @@ import { BookOpen, Check, ChevronDown, CircleAlert, CircleCheck, Copy, Info, Lis
 import { analyzeGrammar, grammarToText, METHODS, SAMPLES, type Diagnostic } from "@/lib/engine";
 import { useStudio } from "@/lib/studio/store";
 import { Badge, Button, Panel, PanelHeader, Select } from "@/components/ui/primitives";
-import { PageHeader } from "@/components/studio/page-header";
+import { PageHeader, StepNav } from "@/components/studio/page-header";
+import { ConceptNote, Notation } from "@/components/studio/concept-note";
 import { METHOD_META, ProductionText, Sym } from "@/components/studio/symbols";
 import { cn, copyText } from "@/lib/utils";
 import { GrammarEditor } from "./grammar-editor";
@@ -15,9 +16,21 @@ export function GrammarView() {
   return (
     <>
       <PageHeader
-        title="Grammar Workbench"
-        description="Write a context-free grammar. It is validated and analysed as you type — all other modules update automatically."
+        step={1}
+        title="Grammar"
+        description="Write a context-free grammar, or load one of the samples. It is checked and analysed as you type, and every other page updates automatically."
       />
+      <ConceptNote id="grammar" title="What a context-free grammar specifies">
+        <p>
+          A grammar <Notation>G = (N, T, P, S)</Notation> lists the <b>productions</b> <Notation>A → α</Notation> that say how a nonterminal A may be
+          rewritten. Symbols with productions are <span className="font-mono text-nonterminal">nonterminals</span>; all others are{" "}
+          <span className="font-mono text-terminal">terminals</span> (tokens). The language of G is every terminal string derivable from S.
+        </p>
+        <p className="mt-2">
+          To build an LR parser the grammar is <b>augmented</b> with a new production <Notation>S′ → S</Notation>, numbered 0. The production numbers
+          shown on the right are the ones used by every table and trace (<Notation>r3</Notation> means “reduce by production 3”).
+        </p>
+      </ConceptNote>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-4">
           <EditorPanel key={projectId} />
@@ -28,6 +41,7 @@ export function GrammarView() {
           <Samples />
         </div>
       </div>
+      <StepNav step={1} />
     </>
   );
 }

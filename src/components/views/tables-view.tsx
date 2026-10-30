@@ -7,7 +7,8 @@ import { formatItem, formatProduction, symbolAfterDot, type ParseTable } from "@
 import { useAnalysis, useStudio } from "@/lib/studio/store";
 import { cellText, tableToCSV, tableToJSON } from "@/lib/studio/export";
 import { Badge, Button, Input, Panel, PanelHeader, Segmented, Select } from "@/components/ui/primitives";
-import { NeedsGrammar, PageHeader } from "@/components/studio/page-header";
+import { NeedsGrammar, PageHeader, StepNav } from "@/components/studio/page-header";
+import { ConceptNote, Notation } from "@/components/studio/concept-note";
 import { ActionChip, ItemText, METHOD_META, ProductionText, Sym } from "@/components/studio/symbols";
 import { StateDetails } from "@/components/studio/state-details";
 import { cn, downloadText, slugify } from "@/lib/utils";
@@ -66,10 +67,29 @@ export function TablesView() {
   return (
     <>
       <PageHeader
-        title="Parsing Tables"
-        description="ACTION and GOTO generated from the automaton. sN = shift and go to state N, rN = reduce by production N, acc = accept, blank = error. Click any cell to see why it is there."
+        step={4}
+        title="Parsing table"
+        description="sN = shift and go to state N · rN = reduce by production N · acc = accept · blank = syntax error. Click any cell to see which item put it there."
         actions={<Segmented value={method} onChange={(m) => (setMethod(m), setCell(null))} options={METHOD_OPTIONS} />}
       />
+      <ConceptNote id="tables" title="How the ACTION and GOTO table is filled">
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            If state I contains <Notation>A → α • a β</Notation> and GOTO(I, a) = J, then ACTION[I, a] = <b>shift J</b>.
+          </li>
+          <li>
+            If I contains the complete item <Notation>A → α •</Notation>, then ACTION[I, a] = <b>reduce A → α</b> for every a in FOLLOW(A) (SLR) or in
+            the item&apos;s lookaheads (CLR, LALR).
+          </li>
+          <li>
+            If I contains <Notation>S′ → S •</Notation>, then ACTION[I, $] = <b>accept</b>.
+          </li>
+          <li>GOTO[I, A] = J for each transition on a nonterminal A.</li>
+        </ul>
+        <p className="mt-2">
+          A cell that receives two different actions is a <b>conflict</b>; it is shown in red and kept, not silently resolved.
+        </p>
+      </ConceptNote>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
         <div className="grid min-w-0 content-start gap-4">
           <Panel className="overflow-hidden">
@@ -251,6 +271,7 @@ export function TablesView() {
           )}
         </Panel>
       </div>
+      <StepNav step={4} />
     </>
   );
 }

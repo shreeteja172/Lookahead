@@ -5,7 +5,8 @@ import { ArrowRight, Footprints, ListChecks, Sigma } from "lucide-react";
 import { END, EPS, formatProduction, sortSymbols, type SetStep } from "@/lib/engine";
 import { useAnalysis } from "@/lib/studio/store";
 import { Badge, Panel, PanelHeader, Segmented } from "@/components/ui/primitives";
-import { NeedsGrammar, PageHeader } from "@/components/studio/page-header";
+import { NeedsGrammar, PageHeader, StepNav } from "@/components/studio/page-header";
+import { ConceptNote, Notation } from "@/components/studio/concept-note";
 import { ProductionText, Sym, SymSet } from "@/components/studio/symbols";
 import { StepperControls, useStepper } from "@/components/studio/stepper";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,9 @@ export function FirstFollowView() {
   return (
     <>
       <PageHeader
-        title="FIRST / FOLLOW"
-        description="Computed by fixed-point iteration over the augmented grammar. Click any set to see exactly why each symbol is in it, or replay the algorithm step by step."
+        step={2}
+        title="FIRST and FOLLOW"
+        description="Click any set to see exactly why each symbol is in it, or switch to step-by-step to replay the computation."
         actions={
           <Segmented
             value={mode}
@@ -31,7 +33,25 @@ export function FirstFollowView() {
           />
         }
       />
+      <ConceptNote id="first-follow" title="Why LR parsers need FIRST and FOLLOW">
+        <p>
+          <Notation>FIRST(α)</Notation> is the set of terminals that can begin a string derived from α, plus ε if α can derive the empty string.{" "}
+          <Notation>FOLLOW(A)</Notation> is the set of terminals that can appear immediately after A in some sentential form; it contains{" "}
+          <Notation>$</Notation> if A can end the input.
+        </p>
+        <ol className="mt-2 list-decimal space-y-1 pl-5">
+          <li>
+            For <Notation>A → X₁ X₂ … Xₙ</Notation>, add FIRST(X₁) to FIRST(A); if X₁ is nullable, add FIRST(X₂) too, and so on.
+          </li>
+          <li>
+            For <Notation>A → α B β</Notation>, add FIRST(β) without ε to FOLLOW(B); if β is nullable (or empty), add all of FOLLOW(A).
+          </li>
+          <li>Repeat until no set changes (a fixed point).</li>
+        </ol>
+        <p className="mt-2">SLR uses FOLLOW to place reductions; LR(1) uses FIRST to compute lookaheads.</p>
+      </ConceptNote>
       {!a ? <NeedsGrammar /> : mode === "final" ? <FinalSets /> : <FirstFollowReplay />}
+      <StepNav step={2} />
     </>
   );
 }
