@@ -115,7 +115,7 @@ export function GrammarEditor({
   }, [focusLine]);
 
   return (
-    <div className="relative flex h-[300px] overflow-hidden rounded-lg sm:h-[420px] border border-border bg-bg-elevated font-mono text-[0.8125rem] leading-6 focus-within:border-accent/60">
+    <div style={{ height: `calc(${Math.min(18, Math.max(8, lines.length + 2)) * 1.5}rem + 1.5rem)` }} className="relative flex overflow-hidden rounded-lg border border-border bg-bg-elevated font-mono text-[0.8125rem] leading-6 focus-within:border-accent/60">
       <div className="relative w-11 shrink-0 overflow-hidden border-r border-border bg-panel-2 text-right text-fg-subtle select-none">
         <div ref={gutterRef} className="py-3 pr-2">
           {lines.map((_, i) => {
@@ -129,7 +129,7 @@ export function GrammarEditor({
                   sev === "warning" && "text-warning",
                 )}
               >
-                {sev && <span className={cn("absolute left-1.5 top-[9px] size-1.5 rounded-full", sev === "error" ? "bg-danger" : sev === "warning" ? "bg-warning" : "bg-info")} />}
+                {sev && <span className={cn("absolute left-1.5 top-[9px] size-1.5 rounded-full", sev === "error" ? "bg-danger" : sev === "warning" ? "bg-warning" : "bg-accent")} />}
                 {i + 1}
               </div>
             );

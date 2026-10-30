@@ -60,7 +60,6 @@ function ShellSkeleton() {
   return (
     <div className="flex h-dvh items-center justify-center bg-bg">
       <div className="flex items-center gap-3 text-sm text-fg-muted">
-        <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
         Loading {SITE.name}…
       </div>
     </div>

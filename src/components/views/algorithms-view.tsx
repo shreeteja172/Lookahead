@@ -28,7 +28,7 @@ export function AlgorithmsView() {
   return (
     <>
       <PageHeader
-        title="Algorithm Explorer"
+        title="Step-through algorithms"
         description="Replay each construction one step at a time. Every step comes from the engine's own log of what it did and why."
         actions={
           <Segmented

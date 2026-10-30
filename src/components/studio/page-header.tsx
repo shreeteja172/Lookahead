@@ -72,7 +72,7 @@ export function NeedsGrammar() {
   return (
     <Panel>
       <EmptyState icon={<CircleAlert />} title={result.error ? "Construction stopped" : "The grammar has errors"}>
-        <p>{result.error ?? `Fix ${errors.length} error${errors.length === 1 ? "" : "s"} in the grammar workbench to generate parsers.`}</p>
+        <p>{result.error ?? `Fix ${errors.length} error${errors.length === 1 ? "" : "s"} on the Grammar page to generate parsers.`}</p>
         {errors.slice(0, 3).map((e, i) => (
           <p key={i} className="mt-1 font-mono text-danger">
             {e.line ? `line ${e.line}: ` : ""}
@@ -81,7 +81,7 @@ export function NeedsGrammar() {
         ))}
         <Link href="/grammar">
           <Button variant="primary" size="sm" className="mt-4">
-            <FileCode2 /> Open Grammar Workbench
+            <FileCode2 /> Open the Grammar page
           </Button>
         </Link>
       </EmptyState>

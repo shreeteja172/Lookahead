@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Check, ChevronDown, CircleAlert, CircleCheck, Copy, Info, ListTree, Sparkles, TriangleAlert, X } from "lucide-react";
-import { analyzeGrammar, grammarToText, METHODS, SAMPLES, type Diagnostic } from "@/lib/engine";
+import { BookOpen, Check, ChevronDown, CircleAlert, CircleCheck, Copy, Info, ListTree, TriangleAlert } from "lucide-react";
+import { analyzeGrammar, grammarToText, SAMPLES, type Diagnostic } from "@/lib/engine";
 import { useStudio } from "@/lib/studio/store";
 import { Badge, Button, Panel, PanelHeader, Select } from "@/components/ui/primitives";
 import { PageHeader, StepNav } from "@/components/studio/page-header";
 import { ConceptNote, Notation } from "@/components/studio/concept-note";
-import { METHOD_META, ProductionText, Sym } from "@/components/studio/symbols";
+import { ProductionText, Sym } from "@/components/studio/symbols";
 import { cn, copyText } from "@/lib/utils";
 import { GrammarEditor } from "./grammar-editor";
 
@@ -244,51 +244,68 @@ function ParsedGrammar() {
   );
 }
 
+const CLASS_GROUPS = [
+  { key: "SLR", title: "SLR(1) grammars", note: "All three methods work." },
+  { key: "LALR", title: "LALR(1) but not SLR(1)", note: "FOLLOW sets are too coarse for SLR." },
+  { key: "CLR", title: "LR(1) but not LALR(1)", note: "LALR state merging creates conflicts." },
+  { key: "NONE", title: "Not LR(1)", note: "Ambiguous: every method has conflicts." },
+] as const;
+
 function Samples() {
   const loadProject = useStudio((s) => s.loadProject);
   const current = useStudio((s) => s.source);
-  // Classification badges are computed from the real tables, never from the sample metadata.
-  const computed = React.useMemo(
+  // Grouping is computed from the generated tables, never taken from the sample metadata.
+  const classOf = React.useMemo(
     () =>
       SAMPLES.map((s) => {
-        const r = analyzeGrammar(s.source);
-        return Object.fromEntries(METHODS.map((m) => [m, r.analysis ? r.analysis.tables[m].conflicts.length === 0 : false]));
+        const t = analyzeGrammar(s.source).analysis?.tables;
+        if (!t) return "NONE";
+        if (!t.SLR.conflicts.length) return "SLR";
+        if (!t.LALR.conflicts.length) return "LALR";
+        if (!t.CLR.conflicts.length) return "CLR";
+        return "NONE";
       }),
     [],
   );
   return (
     <Panel>
-      <PanelHeader icon={<Sparkles />} title="Sample grammars" description="Verified by the automated test-suite. Badges show the computed result." />
-      <div className="grid gap-2 p-3 sm:grid-cols-2">
-        {SAMPLES.map((s, i) => {
-          const active = s.source === current;
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => loadProject({ name: s.title, source: s.source, input: s.inputs[0]?.text ?? "", start: "" })}
-              className={cn(
-                "group flex flex-col gap-1.5 rounded-lg border p-3 text-left transition-colors cursor-pointer",
-                active ? "border-accent/60 bg-highlight-bg" : "border-border hover:border-border-strong hover:bg-panel-2",
-              )}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium">{s.title}</span>
-                {active && <Badge tone="accent">loaded</Badge>}
-              </div>
-              <p className="line-clamp-2 text-xs text-fg-muted">{s.description}</p>
-              <div className="mt-auto flex flex-wrap gap-1 pt-1">
-                {METHODS.map((m) => (
-                  <Badge key={m} tone={computed[i][m] ? METHOD_META[m].tone : "danger"}>
-                    {computed[i][m] ? <Check /> : <X />}
-                    {m}
-                  </Badge>
-                ))}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <PanelHeader title="Sample grammars" description="Grouped by the class computed from their tables. Click one to load it." />
+      {CLASS_GROUPS.map((group) => {
+        const items = SAMPLES.filter((_, i) => classOf[i] === group.key);
+        if (!items.length) return null;
+        return (
+          <div key={group.key} className="border-b border-border px-4 py-3 last:border-0">
+            <div className="mb-1.5 flex items-baseline gap-2">
+              <h4 className="text-sm font-semibold">{group.title}</h4>
+              <span className="text-xs text-fg-muted">{group.note}</span>
+            </div>
+            <ul className="-mx-2">
+              {items.map((s) => {
+                const active = s.source === current;
+                return (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => loadProject({ name: s.title, source: s.source, input: s.inputs[0]?.text ?? "", start: "" })}
+                      aria-current={active ? "true" : undefined}
+                      className={cn(
+                        "w-full rounded-md px-2 py-1.5 text-left cursor-pointer",
+                        active ? "bg-highlight-bg" : "hover:bg-panel-2",
+                      )}
+                    >
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className={cn("text-sm font-medium", active && "text-accent")}>{s.title}</span>
+                        {active && <span className="text-xs text-accent">loaded</span>}
+                      </div>
+                      <p className="line-clamp-2 text-[0.8125rem] text-fg-muted">{s.description}</p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </Panel>
   );
 }

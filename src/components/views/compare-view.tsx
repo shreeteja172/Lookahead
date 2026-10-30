@@ -29,7 +29,7 @@ export function CompareView() {
   if (!a || !cmp || !tok) {
     return (
       <>
-        <PageHeader title="Parser Comparison" />
+        <PageHeader title="Compare parsers" />
         <NeedsGrammar />
       </>
     );
@@ -39,7 +39,7 @@ export function CompareView() {
   return (
     <>
       <PageHeader
-        title="Parser Comparison Lab"
+        title="Compare parsers"
         description="The same grammar and the same input, run through all three constructions. Each parser executes against its own generated table."
       />
       <div className="mb-4 flex gap-2 rounded-xl border border-border bg-panel p-3 text-xs text-fg-muted">
@@ -83,13 +83,9 @@ export function CompareView() {
                     <dt className="text-fg-subtle">Reduce-reduce</dt>
                     <dd className={cn("font-mono", s.reduceReduce && "text-danger")}>{s.reduceReduce}</dd>
                   </dl>
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-panel-2">
-                    <div
-                      className={cn("h-full rounded-full", m === "SLR" ? "bg-slr" : m === "CLR" ? "bg-clr" : "bg-lalr")}
-                      style={{ width: `${(s.states / maxStates) * 100}%` }}
-                    />
+                  <div className="mt-3 h-1 overflow-hidden rounded-full bg-panel-2" title="State count relative to the largest automaton">
+                    <div className="h-full rounded-full bg-fg-subtle" style={{ width: `${(s.states / maxStates) * 100}%` }} />
                   </div>
-                  <div className="mt-1 text-[0.625rem] text-fg-subtle">relative state count</div>
                 </div>
               );
             })}

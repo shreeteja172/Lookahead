@@ -58,7 +58,7 @@ export function AutomatonView() {
   if (!a || !automaton) {
     return (
       <>
-        <PageHeader title="LR Automaton" />
+        <PageHeader step={3} title="LR automaton" />
         <NeedsGrammar />
       </>
     );

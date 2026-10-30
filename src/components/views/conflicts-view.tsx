@@ -32,7 +32,7 @@ export function ConflictsView() {
   if (!a) {
     return (
       <>
-        <PageHeader title="Conflict Analyzer" />
+        <PageHeader title="Conflicts" />
         <NeedsGrammar />
       </>
     );
@@ -44,7 +44,7 @@ export function ConflictsView() {
   return (
     <>
       <PageHeader
-        title="Conflict Analyzer"
+        title="Conflicts"
         description="Every conflicting ACTION cell, the items that compete for it, why the lookahead is there, and in which constructions the same conflict appears."
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -58,16 +58,16 @@ export function ConflictsView() {
                   {a.tables[m].conflicts.filter((c) => c.type === "shift-reduce").length} S/R · {a.tables[m].conflicts.filter((c) => c.type === "reduce-reduce").length} R/R
                 </div>
               </div>
-              <span className={cn("font-mono text-2xl font-semibold", n ? "text-danger" : "text-success")}>{n}</span>
+              <span className={cn("font-mono text-xl font-medium", n ? "text-danger" : "text-fg-subtle")}>{n}</span>
             </Panel>
           );
         })}
         <Panel className="flex items-center justify-between px-4 py-3">
           <div>
-            <div className="font-semibold text-accent">Introduced by merging</div>
+            <div className="font-semibold">Introduced by merging</div>
             <div className="text-xs text-fg-muted">LALR conflicts absent from CLR</div>
           </div>
-          <span className={cn("font-mono text-2xl font-semibold", mergeInduced ? "text-warning" : "text-fg-subtle")}>{mergeInduced}</span>
+          <span className={cn("font-mono text-xl font-medium", mergeInduced ? "text-fg" : "text-fg-subtle")}>{mergeInduced}</span>
         </Panel>
       </div>
 
@@ -75,7 +75,7 @@ export function ConflictsView() {
         <Panel>
           <EmptyState icon={<CircleCheck className="text-success" />} title="No conflicts in any construction">
             The grammar is SLR(1), and therefore also LALR(1) and LR(1). Every ACTION cell of every table holds at most one action. Try the “Dangling
-            else” or “LR(1) but not LALR(1)” samples in the Grammar Workbench to see the analyzer at work.
+            else” or “LR(1) but not LALR(1)” samples on the Grammar page to see the analysis.
           </EmptyState>
         </Panel>
       ) : (
@@ -127,7 +127,7 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
   };
   return (
     <Panel id={`conflict-${c.id}`} className={cn("overflow-hidden", highlighted && "ring-2 ring-accent")}>
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-danger-bg px-4 py-2.5">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-panel-2 px-4 py-2.5">
         <TriangleAlert className="size-4 text-danger" />
         <MethodLabel m={c.method} />
         <span className="font-mono text-sm">
@@ -162,16 +162,16 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
             </div>
           ))}
         </div>
-        <div className="space-y-1.5 text-xs leading-relaxed text-fg-muted">
+        <div className="space-y-2 text-sm leading-relaxed text-fg-muted">
           {d.explanation.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>
         {d.likelyCause && (
-          <div className="flex gap-2 rounded-lg border border-warning/30 bg-warning-bg p-2.5 text-xs leading-relaxed">
-            <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-warning" />
+          <div className="flex gap-2 rounded-lg border border-border bg-panel-2 p-3 text-sm leading-relaxed">
+            <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-fg-muted" />
             <span>
-              <b className="text-warning">Likely cause.</b> <span className="text-fg-muted">{d.likelyCause}</span>
+              <b className="text-fg">Likely cause.</b> <span className="text-fg-muted">{d.likelyCause}</span>
             </span>
           </div>
         )}

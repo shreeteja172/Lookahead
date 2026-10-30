@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
 import { DerivationList } from "./learn-view";
 import { Check, CircleCheck, CircleX, Copy, FileJson, FileSpreadsheet, OctagonAlert, Play, TriangleAlert } from "lucide-react";
 import {
@@ -45,7 +44,7 @@ export function SimulateView() {
   if (!a) {
     return (
       <>
-        <PageHeader title="Simulation Studio" />
+        <PageHeader step={5} title="Parse an input" />
         <NeedsGrammar />
       </>
     );
@@ -375,22 +374,17 @@ function Outcome({ result, visible }: { result: SimResult; visible: boolean }) {
   const ok = result.outcome === "accepted";
   const Icon = ok ? CircleCheck : result.outcome === "conflict" ? OctagonAlert : CircleX;
   return (
-    <AnimatePresence>
+    <>
       {visible && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className={cn("border-t px-4 py-3 text-sm", ok ? "border-success/30 bg-success-bg" : "border-danger/30 bg-danger-bg")}
-        >
+        <div className={cn("border-t px-4 py-3 text-sm", ok ? "border-success/30 bg-success-bg" : "border-danger/30 bg-danger-bg")}>
           <div className={cn("flex items-center gap-2 font-semibold", ok ? "text-success" : "text-danger")}>
             <Icon className="size-4" />
             {ok ? "Accepted" : result.outcome === "conflict" ? "Stopped at a conflict" : result.outcome === "step-limit" ? "Step limit reached" : "Rejected"}
           </div>
-          <p className="mt-0.5 text-xs text-fg-muted">{result.message}</p>
-        </motion.div>
+          <p className="mt-0.5 text-sm text-fg-muted">{result.message}</p>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 

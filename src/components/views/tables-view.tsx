@@ -40,7 +40,7 @@ export function TablesView() {
   if (!a) {
     return (
       <>
-        <PageHeader title="Parsing Tables" />
+        <PageHeader step={4} title="Parsing table" />
         <NeedsGrammar />
       </>
     );
@@ -349,7 +349,7 @@ function CellExplanation({
                 }}
                 className="mt-1"
               >
-                <TriangleAlert /> Open in Conflict Analyzer
+                <TriangleAlert /> Explain this conflict
               </Button>
             )}
           </div>
