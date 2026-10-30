@@ -28,7 +28,7 @@ function highlightLine(line: string, nonterminals: Set<string>): Span[] {
   if (code.trimStart().startsWith("%")) {
     const m = code.match(/^(\s*)(%\S+)(.*)$/);
     if (m) {
-      spans.push({ text: m[1] }, { text: m[2], cls: "text-clr" });
+      spans.push({ text: m[1] }, { text: m[2], cls: "text-fg" });
       for (const part of m[3].split(/(\s+)/)) spans.push({ text: part, cls: /\S/.test(part) ? "text-terminal" : undefined });
     } else spans.push({ text: code });
   } else {
@@ -50,7 +50,7 @@ function highlightLine(line: string, nonterminals: Set<string>): Span[] {
       if (/^\s+$/.test(t)) spans.push({ text: t });
       else if (t === "|") spans.push({ text: t, cls: "text-accent font-semibold" });
       else if (/^['"]/.test(t)) spans.push({ text: t, cls: "text-terminal" });
-      else if (EPSILON_SPELLINGS.has(t)) spans.push({ text: t, cls: "text-epsilon italic" });
+      else if (EPSILON_SPELLINGS.has(t)) spans.push({ text: t, cls: "text-fg-subtle italic" });
       else if (nonterminals.has(t)) spans.push({ text: t, cls: "text-nonterminal" });
       else spans.push({ text: t, cls: "text-terminal" });
     }
@@ -115,7 +115,7 @@ export function GrammarEditor({
   }, [focusLine]);
 
   return (
-    <div className="relative flex h-[300px] overflow-hidden rounded-lg sm:h-[420px] border border-border bg-bg-elevated font-mono text-[13px] leading-6 focus-within:border-accent/60">
+    <div className="relative flex h-[300px] overflow-hidden rounded-lg sm:h-[420px] border border-border bg-bg-elevated font-mono text-[0.8125rem] leading-6 focus-within:border-accent/60">
       <div className="relative w-11 shrink-0 overflow-hidden border-r border-border bg-panel-2 text-right text-fg-subtle select-none">
         <div ref={gutterRef} className="py-3 pr-2">
           {lines.map((_, i) => {
@@ -125,11 +125,11 @@ export function GrammarEditor({
                 key={i}
                 className={cn(
                   "relative tabular-nums",
-                  sev === "error" && "text-conflict",
+                  sev === "error" && "text-danger",
                   sev === "warning" && "text-warning",
                 )}
               >
-                {sev && <span className={cn("absolute left-1.5 top-[9px] size-1.5 rounded-full", sev === "error" ? "bg-conflict" : sev === "warning" ? "bg-warning" : "bg-info")} />}
+                {sev && <span className={cn("absolute left-1.5 top-[9px] size-1.5 rounded-full", sev === "error" ? "bg-danger" : sev === "warning" ? "bg-warning" : "bg-info")} />}
                 {i + 1}
               </div>
             );
@@ -141,7 +141,7 @@ export function GrammarEditor({
           {lines.map((l, i) => {
             const sev = lineSeverity.get(i + 1);
             return (
-              <div key={i} className={cn("-mx-3 px-3", sev === "error" && "bg-conflict-bg", sev === "warning" && "bg-warning/5")}>
+              <div key={i} className={cn("-mx-3 px-3", sev === "error" && "bg-danger-bg", sev === "warning" && "bg-warning-bg")}>
                 {highlightLine(l, nonterminals).map((s, k) => (
                   <span key={k} className={s.cls}>
                     {s.text}

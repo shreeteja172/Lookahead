@@ -69,7 +69,7 @@ function EditorPanel() {
         title="Grammar"
         description={
           <>
-            One rule per line · <span className="font-mono">|</span> separates alternatives · <span className="font-mono text-epsilon">ε</span> for empty ·{" "}
+            One rule per line · <span className="font-mono">|</span> separates alternatives · <span className="font-mono text-fg-subtle">ε</span> for empty ·{" "}
             <kbd className="font-mono">Ctrl+Enter</kbd> to analyse now
           </>
         }
@@ -97,7 +97,7 @@ function EditorPanel() {
               }}
               title="Copy grammar"
             >
-              {copied ? <Check className="text-accept" /> : <Copy />}
+              {copied ? <Check className="text-success" /> : <Copy />}
             </Button>
           </>
         }
@@ -117,15 +117,15 @@ function EditorPanel() {
           {pending ? (
             <span className="text-fg-subtle">Analysing…</span>
           ) : errors.length ? (
-            <span className="flex items-center gap-1.5 text-conflict">
+            <span className="flex items-center gap-1.5 text-danger">
               <CircleAlert className="size-3.5" /> {errors.length} error{errors.length > 1 ? "s" : ""} — parsers cannot be generated
             </span>
           ) : result.error ? (
-            <span className="flex items-center gap-1.5 text-conflict">
+            <span className="flex items-center gap-1.5 text-danger">
               <CircleAlert className="size-3.5" /> {result.error}
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-accept">
+            <span className="flex items-center gap-1.5 text-success">
               <CircleCheck className="size-3.5" /> Valid grammar — SLR, CLR and LALR parsers generated
             </span>
           )}
@@ -150,7 +150,7 @@ function DiagnosticRow({ d, onJump }: { d: Diagnostic; onJump: () => void }) {
         <Icon
           className={cn(
             "mt-0.5 size-3.5 shrink-0",
-            d.severity === "error" ? "text-conflict" : d.severity === "warning" ? "text-warning" : "text-info",
+            d.severity === "error" ? "text-danger" : d.severity === "warning" ? "text-warning" : "text-accent",
           )}
         />
         <div className="min-w-0 text-xs">
@@ -195,17 +195,17 @@ function ParsedGrammar() {
         {grammar.productions.map((p) => (
           <div key={p.id} className={cn("flex items-baseline justify-between gap-3 rounded px-1", p.id === 0 && "text-fg-muted")}>
             <ProductionText p={p} numbered />
-            <span className="text-[11px] text-fg-subtle">{p.id === 0 ? "augmented" : `line ${p.line}`}</span>
+            <span className="text-[0.6875rem] text-fg-subtle">{p.id === 0 ? "augmented" : `line ${p.line}`}</span>
           </div>
         ))}
       </div>
       <div className="grid gap-4 border-t border-border px-4 py-3 sm:grid-cols-2">
         <div>
-          <div className="mb-2 text-[11px] uppercase tracking-wider text-fg-subtle">Nonterminals ({grammar.nonterminals.length})</div>
+          <div className="font-medium mb-2 text-xs text-fg-muted">Nonterminals ({grammar.nonterminals.length})</div>
           <div className="flex flex-wrap gap-1.5">
             {grammar.nonterminals.map((n) => (
               <span key={n} className="inline-flex items-center gap-1 rounded-md border border-border bg-panel-2 px-1.5 py-0.5">
-                <Sym s={n} className="text-[13px]" />
+                <Sym s={n} className="text-[0.8125rem]" />
                 {n === grammar.start && <Badge tone="accent">start</Badge>}
                 {n === grammar.augmentedStart && <Badge>S′</Badge>}
                 {nullable.has(n) && <Badge tone="info">nullable</Badge>}
@@ -216,11 +216,11 @@ function ParsedGrammar() {
           </div>
         </div>
         <div>
-          <div className="mb-2 text-[11px] uppercase tracking-wider text-fg-subtle">Terminals ({grammar.terminals.length} + $)</div>
+          <div className="font-medium mb-2 text-xs text-fg-muted">Terminals ({grammar.terminals.length} + $)</div>
           <div className="flex flex-wrap gap-1.5">
             {[...grammar.terminals, "$"].map((t) => (
               <span key={t} className="rounded-md border border-border bg-panel-2 px-1.5 py-0.5">
-                <Sym s={t} className="text-[13px]" />
+                <Sym s={t} className="text-[0.8125rem]" />
               </span>
             ))}
           </div>
@@ -290,7 +290,7 @@ function NotationHelp() {
       </button>
       {open && (
         <div className="grid gap-4 border-t border-border p-4 text-xs text-fg-muted md:grid-cols-2">
-          <pre className="rounded-lg border border-border bg-bg-elevated p-3 font-mono text-[12px] leading-5 text-fg">{`// comments start with // or #
+          <pre className="rounded-lg border border-border bg-bg-elevated p-3 font-mono text-[0.75rem] leading-5 text-fg">{`// comments start with // or #
 %token id num          // optional terminal declarations
 %start S               // optional start symbol
 
@@ -304,7 +304,7 @@ L  -> ε                // ε, eps, epsilon or λ`}</pre>
             <li>A symbol is a <span className="text-nonterminal">nonterminal</span> iff it appears on the left of an arrow; all others are <span className="text-terminal">terminals</span>.</li>
             <li>The first rule&apos;s left side is the start symbol unless <span className="font-mono">%start</span> or the selector overrides it.</li>
             <li>The grammar is augmented with a fresh <span className="font-mono">S′ → S</span> as production 0.</li>
-            <li><span className="font-mono text-end">$</span> is reserved for end of input.</li>
+            <li><span className="font-mono text-fg-subtle">$</span> is reserved for end of input.</li>
             <li>Duplicate productions are removed (with a warning); unreachable and non-generating symbols are reported.</li>
           </ul>
         </div>

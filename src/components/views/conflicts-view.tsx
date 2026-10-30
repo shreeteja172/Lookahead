@@ -58,13 +58,13 @@ export function ConflictsView() {
                   {a.tables[m].conflicts.filter((c) => c.type === "shift-reduce").length} S/R · {a.tables[m].conflicts.filter((c) => c.type === "reduce-reduce").length} R/R
                 </div>
               </div>
-              <span className={cn("font-mono text-2xl font-semibold", n ? "text-conflict" : "text-accept")}>{n}</span>
+              <span className={cn("font-mono text-2xl font-semibold", n ? "text-danger" : "text-success")}>{n}</span>
             </Panel>
           );
         })}
         <Panel className="flex items-center justify-between px-4 py-3">
           <div>
-            <div className="font-semibold text-lalr">Introduced by merging</div>
+            <div className="font-semibold text-accent">Introduced by merging</div>
             <div className="text-xs text-fg-muted">LALR conflicts absent from CLR</div>
           </div>
           <span className={cn("font-mono text-2xl font-semibold", mergeInduced ? "text-warning" : "text-fg-subtle")}>{mergeInduced}</span>
@@ -73,7 +73,7 @@ export function ConflictsView() {
 
       {all.length === 0 ? (
         <Panel>
-          <EmptyState icon={<CircleCheck className="text-accept" />} title="No conflicts in any construction">
+          <EmptyState icon={<CircleCheck className="text-success" />} title="No conflicts in any construction">
             The grammar is SLR(1), and therefore also LALR(1) and LR(1). Every ACTION cell of every table holds at most one action. Try the “Dangling
             else” or “LR(1) but not LALR(1)” samples in the Grammar Workbench to see the analyzer at work.
           </EmptyState>
@@ -127,11 +127,11 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
   };
   return (
     <Panel id={`conflict-${c.id}`} className={cn("overflow-hidden", highlighted && "ring-2 ring-accent")}>
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-conflict-bg px-4 py-2.5">
-        <TriangleAlert className="size-4 text-conflict" />
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-danger-bg px-4 py-2.5">
+        <TriangleAlert className="size-4 text-danger" />
         <MethodLabel m={c.method} />
         <span className="font-mono text-sm">
-          state <span className="font-bold text-state">I{c.state}</span> on <Sym s={c.terminal} className="font-bold" />
+          state <span className="font-bold text-fg">I{c.state}</span> on <Sym s={c.terminal} className="font-bold" />
         </span>
         <Badge tone="danger">{c.type}</Badge>
         {d.introducedByMerge && (
@@ -140,9 +140,9 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
           </Badge>
         )}
         <div className="ml-auto flex items-center gap-1">
-          <span className="text-[11px] text-fg-subtle">also in</span>
+          <span className="text-[0.6875rem] text-fg-subtle">also in</span>
           {d.alsoIn.length === 0 ? (
-            <span className="text-[11px] text-fg-subtle">— only {c.method}</span>
+            <span className="text-[0.6875rem] text-fg-subtle">— only {c.method}</span>
           ) : (
             [...new Set(d.alsoIn.map((x) => x.method))].map((m) => (
               <Badge key={m} tone={METHOD_META[m].tone}>
@@ -157,7 +157,7 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
           {d.items.map((it, i) => (
             <div key={i} className="flex items-center gap-3 rounded-md border border-border bg-panel-2/60 px-2.5 py-1">
               <ActionChip a={c.entries[i].action} className="w-10 text-sm" />
-              <span className="text-[11px] uppercase text-fg-subtle w-12">{it.role}</span>
+              <span className="w-14 text-xs text-fg-muted">{it.role}</span>
               <ItemText grammar={a.grammar} item={it.item} showLookaheads={c.method !== "SLR"} highlightLookahead={c.terminal} />
             </div>
           ))}
@@ -168,7 +168,7 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
           ))}
         </div>
         {d.likelyCause && (
-          <div className="flex gap-2 rounded-lg border border-warning/30 bg-warning/5 p-2.5 text-xs leading-relaxed">
+          <div className="flex gap-2 rounded-lg border border-warning/30 bg-warning-bg p-2.5 text-xs leading-relaxed">
             <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-warning" />
             <span>
               <b className="text-warning">Likely cause.</b> <span className="text-fg-muted">{d.likelyCause}</span>
@@ -177,8 +177,8 @@ function ConflictCard({ d, highlighted }: { d: ConflictDiagnosis; highlighted: b
         )}
         {d.mergeOrigins && d.mergeOrigins.length > 0 && d.mergeOrigins[0].byState.length > 1 && (
           <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full font-mono text-[12px]">
-              <thead className="bg-panel-2 text-[11px] text-fg-subtle">
+            <table className="w-full font-mono text-[0.75rem]">
+              <thead className="bg-panel-2 text-[0.6875rem] text-fg-subtle">
                 <tr>
                   <th className="px-2 py-1 text-left font-sans font-medium">
                     Is <Sym s={c.terminal} /> a lookahead of…

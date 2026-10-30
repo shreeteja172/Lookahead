@@ -36,7 +36,7 @@ export function StateDetails({
     <button
       type="button"
       onClick={() => onSelect?.(id)}
-      className="rounded px-1 font-mono font-semibold text-state hover:bg-panel-2 cursor-pointer"
+      className="rounded px-1 font-mono font-semibold text-fg hover:bg-panel-2 cursor-pointer"
     >
       I{id}
     </button>
@@ -47,10 +47,10 @@ export function StateDetails({
       key={i}
       className={cn(
         "flex items-center gap-2 rounded px-1.5",
-        highlightItems?.has(i) && "bg-conflict-bg ring-1 ring-conflict/40",
+        highlightItems?.has(i) && "bg-danger-bg ring-1 ring-danger/40",
       )}
     >
-      <span className="w-5 shrink-0 text-right font-mono text-[10px] text-fg-subtle">{i}</span>
+      <span className="w-5 shrink-0 text-right font-mono text-[0.625rem] text-fg-subtle">{i}</span>
       <ItemText grammar={g} item={it} showLookaheads={showLA} />
     </div>
   );
@@ -58,7 +58,7 @@ export function StateDetails({
   return (
     <div className="space-y-4 text-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-lg font-bold text-state">I{stateId}</span>
+        <span className="font-mono text-lg font-bold text-fg">I{stateId}</span>
         {stateId === 0 && <Badge tone="accent">initial</Badge>}
         {st.items.some((i) => i.prod === 0 && i.dot === 1) && <Badge tone="success">accepting</Badge>}
         {conflicts.length > 0 && (
@@ -70,8 +70,8 @@ export function StateDetails({
       </div>
 
       {group && group.clrStates.length > 1 && (
-        <div className="rounded-lg border border-lalr/30 bg-lalr/5 p-2.5 text-xs">
-          <div className="mb-1 flex items-center gap-1.5 font-medium text-lalr">
+        <div className="rounded-lg border border-border-strong bg-panel-2 p-2.5 text-xs">
+          <div className="mb-1 flex items-center gap-1.5 font-medium text-accent">
             <GitMerge className="size-3.5" /> Merged from CLR states {group.clrStates.join(", ")}
           </div>
           <div className="text-fg-muted">These canonical LR(1) states share the same LR(0) core; their lookahead sets were united.</div>
@@ -79,19 +79,19 @@ export function StateDetails({
       )}
 
       <section>
-        <h4 className="mb-1 text-[11px] uppercase tracking-wider text-fg-subtle">Kernel items</h4>
+        <h4 className="font-medium mb-1 text-xs text-fg-muted">Kernel items</h4>
         {kernel.map(itemRow)}
       </section>
       {closure.length > 0 && (
         <section>
-          <h4 className="mb-1 text-[11px] uppercase tracking-wider text-fg-subtle">Closure items</h4>
+          <h4 className="font-medium mb-1 text-xs text-fg-muted">Closure items</h4>
           {closure.map(itemRow)}
         </section>
       )}
 
       <section className="grid grid-cols-2 gap-3">
         <div>
-          <h4 className="mb-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-fg-subtle">
+          <h4 className="font-medium mb-1 flex items-center gap-1 text-xs text-fg-muted">
             <ArrowRight className="size-3" /> GOTO out
           </h4>
           {st.transitions.size === 0 && <div className="text-xs text-fg-subtle">none</div>}
@@ -102,7 +102,7 @@ export function StateDetails({
           ))}
         </div>
         <div>
-          <h4 className="mb-1 flex items-center gap-1 text-[11px] uppercase tracking-wider text-fg-subtle">
+          <h4 className="font-medium mb-1 flex items-center gap-1 text-xs text-fg-muted">
             <ArrowLeft className="size-3" /> Reached from
           </h4>
           {incoming.length === 0 && <div className="text-xs text-fg-subtle">start state</div>}
@@ -115,7 +115,7 @@ export function StateDetails({
       </section>
 
       <section>
-        <h4 className="mb-1 text-[11px] uppercase tracking-wider text-fg-subtle">{method} ACTION row</h4>
+        <h4 className="font-medium mb-1 text-xs text-fg-muted">{method} ACTION row</h4>
         <div className="flex flex-wrap gap-1.5">
           {table.terminals
             .filter((t) => table.action[stateId].has(t))
@@ -126,13 +126,13 @@ export function StateDetails({
                   key={t}
                   className={cn(
                     "inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs",
-                    es.length > 1 ? "border-conflict/50 bg-conflict-bg" : "border-border bg-panel-2",
+                    es.length > 1 ? "border-danger/50 bg-danger-bg" : "border-border bg-panel-2",
                   )}
                 >
                   <Sym s={t} />:
                   {es.map((e, k) => (
                     <React.Fragment key={k}>
-                      {k > 0 && <span className="text-conflict">/</span>}
+                      {k > 0 && <span className="text-danger">/</span>}
                       <ActionChip a={e.action} />
                     </React.Fragment>
                   ))}

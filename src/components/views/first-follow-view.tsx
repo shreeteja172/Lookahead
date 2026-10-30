@@ -53,7 +53,7 @@ function FinalSets() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-fg-subtle">
+              <tr className="font-medium border-b border-border text-left text-xs text-fg-muted">
                 <th className="px-4 py-2 font-medium">Nonterminal</th>
                 <th className="px-3 py-2 font-medium">Nullable</th>
                 <th className="px-3 py-2 font-medium">FIRST</th>
@@ -80,7 +80,7 @@ function FinalSets() {
                   <tr key={nt} className="border-b border-border/60 last:border-0">
                     <td className="px-4 py-1.5">
                       <Sym s={nt} className="font-semibold" />
-                      {nt === g.augmentedStart && <span className="ml-2 text-[11px] text-fg-subtle">augmented</span>}
+                      {nt === g.augmentedStart && <span className="ml-2 text-[0.6875rem] text-fg-subtle">augmented</span>}
                     </td>
                     {cell(
                       "NULLABLE",
@@ -215,7 +215,7 @@ export function FirstFollowReplay() {
         <Panel className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-fg-subtle">
+              <tr className="font-medium border-b border-border text-left text-xs text-fg-muted">
                 <th className="px-4 py-2 font-medium">Nonterminal</th>
                 <th className="px-3 py-2 font-medium">Nullable</th>
                 <th className="px-3 py-2 font-medium">FIRST</th>
@@ -230,11 +230,11 @@ export function FirstFollowReplay() {
                 return (
                   <tr
                     key={nt}
-                    className={cn("border-b border-border/60 last:border-0 transition-colors", isTarget && "bg-highlight-bg", isSource && !isTarget && "bg-lalr/5")}
+                    className={cn("border-b border-border/60 last:border-0 transition-colors", isTarget && "bg-highlight-bg", isSource && !isTarget && "bg-panel-2")}
                   >
                     <td className="px-4 py-2">
                       <Sym s={nt} className="font-semibold" />
-                      {isSource && !isTarget && <span className="ml-2 text-[10px] text-lalr">source</span>}
+                      {isSource && !isTarget && <span className="ml-2 text-[0.625rem] text-accent">source</span>}
                     </td>
                     <td className="px-3 py-2">
                       {sets.nullable.has(nt) ? (
@@ -273,11 +273,11 @@ export function FirstFollowReplay() {
                   </li>
                   <li>
                     <b>FIRST</b>: for A → X₁…Xₙ add FIRST(Xᵢ) ∖ {"{"}
-                    <span className="text-epsilon">{EPS}</span>
+                    <span className="text-fg-subtle">{EPS}</span>
                     {"}"} while X₁…Xᵢ₋₁ are nullable; add {EPS} if all are.
                   </li>
                   <li>
-                    <b>FOLLOW</b>: <span className="font-mono text-end">{END}</span> ∈ FOLLOW(S′); for A → αBβ add FIRST(β) ∖ {"{"}
+                    <b>FOLLOW</b>: <span className="font-mono text-fg-subtle">{END}</span> ∈ FOLLOW(S′); for A → αBβ add FIRST(β) ∖ {"{"}
                     {EPS}
                     {"}"} to FOLLOW(B), and FOLLOW(A) if β is nullable.
                   </li>

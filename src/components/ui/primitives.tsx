@@ -13,11 +13,11 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-accent text-accent-fg hover:bg-accent/90 shadow-sm",
-        secondary: "bg-panel-2 text-fg border border-border hover:border-border-strong hover:bg-panel-2/70",
+        primary: "bg-accent text-accent-fg hover:bg-accent/90",
+        secondary: "bg-panel text-fg border border-border hover:bg-panel-2",
         ghost: "text-fg-muted hover:text-fg hover:bg-panel-2",
         outline: "border border-border text-fg hover:bg-panel-2",
-        danger: "bg-conflict/15 text-conflict hover:bg-conflict/25",
+        danger: "border border-danger/30 text-danger hover:bg-danger-bg",
       },
       size: {
         sm: "h-7 px-2.5 text-xs",
@@ -47,19 +47,20 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
 /* ------------------------------------------------------------------ */
 
 export const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium leading-none whitespace-nowrap [&_svg]:size-3",
+  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.6875rem] font-medium leading-4 whitespace-nowrap [&_svg]:size-3",
   {
     variants: {
       tone: {
-        neutral: "bg-panel-2 text-fg-muted border border-border",
-        accent: "bg-accent/15 text-accent",
-        success: "bg-accept/15 text-accept",
-        danger: "bg-conflict/15 text-conflict",
-        warning: "bg-warning/15 text-warning",
-        info: "bg-info/15 text-info",
-        slr: "bg-slr/15 text-slr",
-        clr: "bg-clr/15 text-clr",
-        lalr: "bg-lalr/15 text-lalr",
+        neutral: "border-border bg-panel-2 text-fg-muted",
+        accent: "border-accent/25 bg-highlight-bg text-accent",
+        success: "border-success/25 bg-success-bg text-success",
+        danger: "border-danger/25 bg-danger-bg text-danger",
+        warning: "border-warning/25 bg-warning-bg text-warning",
+        info: "border-accent/25 bg-highlight-bg text-accent",
+        // Parser methods are labelled, not colour-coded.
+        slr: "border-border bg-panel-2 text-fg-muted",
+        clr: "border-border bg-panel-2 text-fg-muted",
+        lalr: "border-border bg-panel-2 text-fg-muted",
       },
     },
     defaultVariants: { tone: "neutral" },
@@ -79,7 +80,7 @@ export function Badge({
 /* ------------------------------------------------------------------ */
 
 export function Panel({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-xl border border-border bg-panel", className)} {...props} />;
+  return <div className={cn("rounded-lg border border-border bg-panel", className)} {...props} />;
 }
 
 export function PanelHeader({
@@ -97,12 +98,10 @@ export function PanelHeader({
 }) {
   return (
     <div className={cn("flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3", className)}>
-      <div className="flex min-w-0 items-start gap-2.5">
-        {icon && <div className="mt-0.5 text-fg-subtle [&_svg]:size-4">{icon}</div>}
-        <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-fg">{title}</h3>
-          {description && <p className="mt-0.5 text-xs text-fg-muted">{description}</p>}
-        </div>
+      {/* Icons are accepted for API compatibility but not drawn: headers stay text-only. */}
+      <div className="min-w-0" data-has-icon={icon ? "" : undefined}>
+        <h3 className="text-[0.9375rem] font-semibold text-fg">{title}</h3>
+        {description && <p className="mt-0.5 max-w-prose text-[0.8125rem] leading-snug text-fg-muted">{description}</p>}
       </div>
       {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">{actions}</div>}
     </div>
@@ -127,7 +126,7 @@ export function Segmented<T extends string>({
   size?: "sm" | "md";
 }) {
   return (
-    <div role="tablist" className={cn("inline-flex min-w-0 max-w-full overflow-x-auto rounded-lg border border-border bg-panel-2 p-0.5", className)}>
+    <div role="tablist" className={cn("inline-flex min-w-0 max-w-full overflow-x-auto rounded-md border border-border bg-panel-2 p-0.5", className)}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -139,7 +138,7 @@ export function Segmented<T extends string>({
           className={cn(
             "rounded-md font-medium transition-colors cursor-pointer whitespace-nowrap",
             size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-xs sm:text-sm",
-            value === o.value ? "bg-bg-elevated text-fg shadow-sm" : "text-fg-muted hover:text-fg",
+            value === o.value ? "bg-panel text-fg ring-1 ring-border" : "text-fg-muted hover:text-fg",
             value === o.value && o.className,
           )}
         >
@@ -158,7 +157,7 @@ export function Kbd({ className, ...props }: React.HTMLAttributes<HTMLElement>) 
   return (
     <kbd
       className={cn(
-        "inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-panel-2 px-1 font-mono text-[10px] text-fg-muted",
+        "inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-panel-2 px-1 font-mono text-[0.625rem] text-fg-muted",
         className,
       )}
       {...props}
@@ -210,7 +209,7 @@ export function EmptyState({
 }) {
   return (
     <div className={cn("flex flex-col items-center justify-center gap-2 px-6 py-12 text-center", className)}>
-      {icon && <div className="rounded-full border border-border bg-panel-2 p-3 text-fg-subtle [&_svg]:size-5">{icon}</div>}
+      {icon && <div className="text-fg-subtle [&_svg]:size-5">{icon}</div>}
       <div className="text-sm font-medium text-fg">{title}</div>
       {children && <div className="max-w-md text-xs text-fg-muted">{children}</div>}
     </div>
@@ -230,16 +229,16 @@ export function Stat({
 }) {
   return (
     <div className="min-w-0">
-      <div className="text-[11px] uppercase tracking-wider text-fg-subtle">{label}</div>
+      <div className="font-medium text-xs text-fg-muted">{label}</div>
       <div
         className={cn(
-          "mt-0.5 font-mono text-lg font-semibold tabular-nums",
-          tone === "danger" ? "text-conflict" : tone === "success" ? "text-accept" : "text-fg",
+          "mt-0.5 font-mono text-lg font-medium tabular-nums",
+          tone === "danger" ? "text-danger" : tone === "success" ? "text-success" : "text-fg",
         )}
       >
         {value}
       </div>
-      {hint && <div className="text-[11px] text-fg-subtle">{hint}</div>}
+      {hint && <div className="text-[0.6875rem] text-fg-subtle">{hint}</div>}
     </div>
   );
 }

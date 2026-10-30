@@ -35,7 +35,7 @@ export function NeedsGrammar() {
       <EmptyState icon={<CircleAlert />} title={result.error ? "Construction stopped" : "The grammar has errors"}>
         <p>{result.error ?? `Fix ${errors.length} error${errors.length === 1 ? "" : "s"} in the grammar workbench to generate parsers.`}</p>
         {errors.slice(0, 3).map((e, i) => (
-          <p key={i} className="mt-1 font-mono text-conflict">
+          <p key={i} className="mt-1 font-mono text-danger">
             {e.line ? `line ${e.line}: ` : ""}
             {e.message}
           </p>

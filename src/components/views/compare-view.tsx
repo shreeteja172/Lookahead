@@ -43,7 +43,7 @@ export function CompareView() {
         description="The same grammar and the same input, run through all three constructions. Each parser executes against its own generated table."
       />
       <div className="mb-4 flex gap-2 rounded-xl border border-border bg-panel p-3 text-xs text-fg-muted">
-        <Info className="mt-0.5 size-4 shrink-0 text-info" />
+        <Info className="mt-0.5 size-4 shrink-0 text-accent" />
         <p>
           Two different questions: <b className="text-fg">is the grammar conflict-free</b> under a method (a property of the table, independent of any input),
           and <b className="text-fg">is this particular input accepted</b> by the resulting parser. A parser with conflicts can still accept inputs that never
@@ -79,9 +79,9 @@ export function CompareView() {
                     <dt className="text-fg-subtle">GOTO entries</dt>
                     <dd className="font-mono">{s.gotoEntries}</dd>
                     <dt className="text-fg-subtle">Shift-reduce</dt>
-                    <dd className={cn("font-mono", s.shiftReduce && "text-conflict")}>{s.shiftReduce}</dd>
+                    <dd className={cn("font-mono", s.shiftReduce && "text-danger")}>{s.shiftReduce}</dd>
                     <dt className="text-fg-subtle">Reduce-reduce</dt>
-                    <dd className={cn("font-mono", s.reduceReduce && "text-conflict")}>{s.reduceReduce}</dd>
+                    <dd className={cn("font-mono", s.reduceReduce && "text-danger")}>{s.reduceReduce}</dd>
                   </dl>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-panel-2">
                     <div
@@ -89,7 +89,7 @@ export function CompareView() {
                       style={{ width: `${(s.states / maxStates) * 100}%` }}
                     />
                   </div>
-                  <div className="mt-1 text-[10px] text-fg-subtle">relative state count</div>
+                  <div className="mt-1 text-[0.625rem] text-fg-subtle">relative state count</div>
                 </div>
               );
             })}
@@ -105,7 +105,7 @@ export function CompareView() {
             }
           />
           {tok.errors.length ? (
-            <div className="p-4 text-sm text-conflict">{tok.errors[0].message}</div>
+            <div className="p-4 text-sm text-danger">{tok.errors[0].message}</div>
           ) : (
             cmp.sims && cmp.trace && <TraceComparison sims={cmp.sims} firstDivergence={cmp.trace.firstDivergence} consumed={cmp.trace.consumed} total={tok.tokens.length} />
           )}
@@ -139,7 +139,7 @@ function TraceComparison({
             <div key={m} className="bg-panel p-3">
               <div className="flex items-center gap-2">
                 <MethodLabel m={m} />
-                <span className={cn("flex items-center gap-1 text-sm font-medium", ok ? "text-accept" : "text-conflict")}>
+                <span className={cn("flex items-center gap-1 text-sm font-medium", ok ? "text-success" : "text-danger")}>
                   {ok ? <CircleCheck className="size-4" /> : r.outcome === "conflict" ? <OctagonAlert className="size-4" /> : <CircleX className="size-4" />}
                   {r.outcome}
                 </span>
@@ -162,8 +162,8 @@ function TraceComparison({
         )}
       </div>
       <div className="max-h-[420px] overflow-auto border-t border-border">
-        <table className="w-full border-separate border-spacing-0 font-mono text-[12px]">
-          <thead className="sticky top-0 bg-panel-2 text-left text-[11px] text-fg-subtle">
+        <table className="w-full border-separate border-spacing-0 font-mono text-[0.75rem]">
+          <thead className="sticky top-0 bg-panel-2 text-left text-[0.6875rem] text-fg-subtle">
             <tr>
               <th className="border-b border-border px-3 py-1.5 font-sans font-medium">#</th>
               {METHODS.map((m) => (
@@ -175,7 +175,7 @@ function TraceComparison({
           </thead>
           <tbody>
             {Array.from({ length: rows }, (_, i) => (
-              <tr key={i} className={cn(i === firstDivergence && "bg-warning/10")}>
+              <tr key={i} className={cn(i === firstDivergence && "bg-warning-bg")}>
                 <td className="border-b border-border/60 px-3 py-1 text-fg-subtle">{i + 1}</td>
                 {METHODS.map((m) => {
                   const s = sims[m].steps[i];
@@ -183,10 +183,10 @@ function TraceComparison({
                     <td key={m} className="border-b border-border/60 px-3 py-1 whitespace-nowrap">
                       {s ? (
                         <>
-                          <span className="text-state">{s.actionCell.state}</span> · <Sym s={s.actionCell.terminal} /> →{" "}
+                          <span className="text-fg">{s.actionCell.state}</span> · <Sym s={s.actionCell.terminal} /> →{" "}
                           <span
                             className={cn(
-                              s.kind === "shift" ? "text-shift" : s.kind === "reduce" ? "text-reduce" : s.kind === "accept" ? "text-accept" : "text-conflict",
+                              s.kind === "shift" ? "text-fg" : s.kind === "reduce" ? "text-reduce" : s.kind === "accept" ? "text-success" : "text-danger",
                             )}
                           >
                             {s.actions.length ? s.actions.map(formatAction).join("/") : "error"}
@@ -245,8 +245,8 @@ function TableDiffs({ slrVsLalr, clrVsLalr }: { slrVsLalr: CellDiff[]; clrVsLalr
         </div>
       ) : (
         <div className="max-h-[420px] overflow-auto">
-          <table className="w-full border-separate border-spacing-0 font-mono text-[12.5px]">
-            <thead className="sticky top-0 bg-panel-2 text-left text-[11px] text-fg-subtle">
+          <table className="w-full border-separate border-spacing-0 font-mono text-[0.78125rem]">
+            <thead className="sticky top-0 bg-panel-2 text-left text-[0.6875rem] text-fg-subtle">
               <tr>
                 <th className="border-b border-border px-3 py-1.5 font-sans font-medium">{left} state</th>
                 <th className="border-b border-border px-3 py-1.5 font-sans font-medium">LALR state</th>
@@ -260,20 +260,20 @@ function TableDiffs({ slrVsLalr, clrVsLalr }: { slrVsLalr: CellDiff[]; clrVsLalr
               {diffs.map((d, i) => (
                 <tr key={i} className="hover:bg-panel-2">
                   <td className="border-b border-border/60 px-3 py-1">
-                    <button className="text-state hover:underline cursor-pointer" onClick={() => go(left, d.leftState, d.symbol)}>
+                    <button className="text-fg hover:underline cursor-pointer" onClick={() => go(left, d.leftState, d.symbol)}>
                       {d.leftState}
                     </button>
                   </td>
                   <td className="border-b border-border/60 px-3 py-1">
-                    <button className="text-state hover:underline cursor-pointer" onClick={() => go("LALR", d.rightState, d.symbol)}>
+                    <button className="text-fg hover:underline cursor-pointer" onClick={() => go("LALR", d.rightState, d.symbol)}>
                       {d.rightState}
                     </button>
                   </td>
                   <td className="border-b border-border/60 px-3 py-1">
                     <Sym s={d.symbol} />
                   </td>
-                  <td className={cn("border-b border-border/60 px-3 py-1", d.left.length > 1 && "text-conflict")}>{d.left.join("/") || "—"}</td>
-                  <td className={cn("border-b border-border/60 px-3 py-1", d.right.length > 1 && "text-conflict")}>{d.right.join("/") || "—"}</td>
+                  <td className={cn("border-b border-border/60 px-3 py-1", d.left.length > 1 && "text-danger")}>{d.left.join("/") || "—"}</td>
+                  <td className={cn("border-b border-border/60 px-3 py-1", d.right.length > 1 && "text-danger")}>{d.right.join("/") || "—"}</td>
                   <td className="border-b border-border/60 px-3 py-1 font-sans text-xs text-fg-muted">{explainDiff(d, left)}</td>
                 </tr>
               ))}

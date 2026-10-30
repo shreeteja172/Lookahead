@@ -89,7 +89,7 @@ export function SimulateView() {
             </span>
           )}
           {tokenized?.errors.map((e, i) => (
-            <span key={i} className="flex items-center gap-1 text-conflict">
+            <span key={i} className="flex items-center gap-1 text-danger">
               <CircleX className="size-3.5" /> {e.message} Terminals: {a.grammar.terminals.join(" ")}
             </span>
           ))}
@@ -126,7 +126,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
           <StepperControls s={s} />
         </div>
         {!conflictFree && (
-          <div className="flex items-center gap-2 border-t border-border bg-warning/5 px-4 py-2 text-xs text-warning">
+          <div className="flex items-center gap-2 border-t border-border bg-warning-bg px-4 py-2 text-xs text-warning">
             <TriangleAlert className="size-3.5" /> The {METHOD_META[method].label} table has {table.conflicts.length} conflicting cell(s). Parsing
             is deterministic only until one of them is consulted.
           </div>
@@ -151,7 +151,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
                     }
                   }}
                 >
-                  {copied ? <Check className="text-accept" /> : <Copy />}
+                  {copied ? <Check className="text-success" /> : <Copy />}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => downloadText(`${slugify(projectName)}-${method.toLowerCase()}-trace.csv`, traceToCSV(result), "text/csv")}>
                   <FileSpreadsheet /> CSV
@@ -167,8 +167,8 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
             }
           />
           <div ref={traceRef} className="max-h-[52vh] overflow-auto">
-            <table className="w-full border-separate border-spacing-0 font-mono text-[12.5px]">
-              <thead className="sticky top-0 z-10 bg-panel-2 text-left text-[11px] uppercase tracking-wider text-fg-subtle">
+            <table className="w-full border-separate border-spacing-0 font-mono text-[0.78125rem]">
+              <thead className="font-medium sticky top-0 z-10 bg-panel-2 text-left text-xs text-fg-muted">
                 <tr>
                   <th className="border-b border-border px-3 py-1.5 font-sans font-medium">#</th>
                   <th className="border-b border-border px-3 py-1.5 font-sans font-medium">Stack</th>
@@ -195,7 +195,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
                       {st.remaining.map((t, k) => (
                         <React.Fragment key={k}>
                           {k > 0 && " "}
-                          <Sym s={t} className={cn(k === 0 && "underline decoration-accent decoration-2 underline-offset-4")} />
+                          <Sym s={t} className={cn(k === 0 && "underline decoration-fg-subtle decoration-2 underline-offset-4")} />
                         </React.Fragment>
                       ))}
                     </td>
@@ -215,7 +215,7 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
             <PanelHeader title="Current configuration" description={`Step ${s.index + 1}: state ${step.actionCell.state}, lookahead ${step.actionCell.terminal}`} />
             <div className="space-y-4 p-4">
               <div>
-                <div className="mb-1.5 text-[11px] uppercase tracking-wider text-fg-subtle">Stack (bottom → top)</div>
+                <div className="font-medium mb-1.5 text-xs text-fg-muted">Stack (bottom → top)</div>
                 <div className="flex flex-wrap items-end gap-1">
                   <AnimatePresence initial={false}>
                     {step.stack.map((e, i) => (
@@ -230,21 +230,21 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
                           i === step.stack.length - 1 ? "border-accent bg-highlight-bg" : "border-border bg-panel-2",
                         )}
                       >
-                        <span className="font-mono text-[12px]">{e.symbol ? <Sym s={e.symbol} /> : <span className="text-fg-subtle">⊥</span>}</span>
-                        <span className="font-mono text-[11px] font-bold text-state">{e.state}</span>
+                        <span className="font-mono text-[0.75rem]">{e.symbol ? <Sym s={e.symbol} /> : <span className="text-fg-subtle">⊥</span>}</span>
+                        <span className="font-mono text-[0.6875rem] font-bold text-fg">{e.state}</span>
                       </motion.div>
                     ))}
                   </AnimatePresence>
                 </div>
               </div>
               <div>
-                <div className="mb-1.5 text-[11px] uppercase tracking-wider text-fg-subtle">Remaining input</div>
+                <div className="font-medium mb-1.5 text-xs text-fg-muted">Remaining input</div>
                 <div className="flex flex-wrap gap-1">
                   {step.remaining.map((t, i) => (
                     <span
                       key={i}
                       className={cn(
-                        "rounded-md border px-2 py-1 font-mono text-[12px]",
+                        "rounded-md border px-2 py-1 font-mono text-[0.75rem]",
                         i === 0 ? "border-accent bg-highlight-bg" : "border-border bg-panel-2 opacity-70",
                       )}
                     >
@@ -257,20 +257,20 @@ function Run({ analysis, result, method }: { analysis: Analysis; result: SimResu
                 className={cn(
                   "rounded-lg border p-3 text-sm",
                   step.kind === "accept"
-                    ? "border-accept/40 bg-accept-bg"
+                    ? "border-success/40 bg-success-bg"
                     : step.kind === "error" || step.kind === "conflict"
-                      ? "border-conflict/40 bg-conflict-bg"
+                      ? "border-danger/40 bg-danger-bg"
                       : "border-border bg-panel-2/60",
                 )}
               >
                 <div className="mb-1 flex items-center gap-2 font-mono text-xs">
-                  ACTION[<span className="text-state">{step.actionCell.state}</span>, <Sym s={step.actionCell.terminal} />] =
+                  ACTION[<span className="text-fg">{step.actionCell.state}</span>, <Sym s={step.actionCell.terminal} />] =
                   {step.actions.length ? step.actions.map((x, k) => (
                     <React.Fragment key={k}>
-                      {k > 0 && <span className="text-conflict">/</span>}
+                      {k > 0 && <span className="text-danger">/</span>}
                       <ActionChip a={x} />
                     </React.Fragment>
-                  )) : <span className="text-conflict">error</span>}
+                  )) : <span className="text-danger">error</span>}
                 </div>
                 <p className="text-xs text-fg-muted">{step.description}</p>
                 {step.kind === "reduce" && step.actions[0]?.type === "reduce" && (
@@ -305,7 +305,7 @@ function StackText({ step }: { step: SimStep }) {
               <Sym s={e.symbol} />{" "}
             </>
           )}
-          <span className="text-state">{e.state}</span>
+          <span className="text-fg">{e.state}</span>
         </React.Fragment>
       ))}
     </>
@@ -313,10 +313,10 @@ function StackText({ step }: { step: SimStep }) {
 }
 
 function StepAction({ step, analysis }: { step: SimStep; analysis: Analysis }) {
-  if (step.kind === "error") return <span className="font-semibold text-conflict">error</span>;
+  if (step.kind === "error") return <span className="font-semibold text-danger">error</span>;
   if (step.kind === "conflict")
     return (
-      <span className="text-conflict">
+      <span className="text-danger">
         conflict {step.actions.map((a, i) => (
           <React.Fragment key={i}>
             {i > 0 && "/"}
@@ -326,7 +326,7 @@ function StepAction({ step, analysis }: { step: SimStep; analysis: Analysis }) {
       </span>
     );
   const a = step.actions[0];
-  if (a.type === "accept") return <span className="font-semibold text-accept">accept</span>;
+  if (a.type === "accept") return <span className="font-semibold text-success">accept</span>;
   if (a.type === "shift") return <span>shift <ActionChip a={a} /></span>;
   return (
     <span>
@@ -345,9 +345,9 @@ function Outcome({ result, visible }: { result: SimResult; visible: boolean }) {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className={cn("border-t px-4 py-3 text-sm", ok ? "border-accept/30 bg-accept-bg" : "border-conflict/30 bg-conflict-bg")}
+          className={cn("border-t px-4 py-3 text-sm", ok ? "border-success/30 bg-success-bg" : "border-danger/30 bg-danger-bg")}
         >
-          <div className={cn("flex items-center gap-2 font-semibold", ok ? "text-accept" : "text-conflict")}>
+          <div className={cn("flex items-center gap-2 font-semibold", ok ? "text-success" : "text-danger")}>
             <Icon className="size-4" />
             {ok ? "Accepted" : result.outcome === "conflict" ? "Stopped at a conflict" : result.outcome === "step-limit" ? "Step limit reached" : "Rejected"}
           </div>
@@ -364,12 +364,12 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
   const st = step.actionCell.state;
   return (
     <div className="space-y-2">
-      <div className="text-[11px] uppercase tracking-wider text-fg-subtle">Table lookup</div>
+      <div className="font-medium text-xs text-fg-muted">Table lookup</div>
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-max min-w-full font-mono text-[12px]">
+        <table className="w-max min-w-full font-mono text-[0.75rem]">
           <thead className="bg-panel-2">
             <tr>
-              <th className="px-2 py-1 text-left text-[10px] font-sans font-medium text-fg-subtle">ACTION</th>
+              <th className="px-2 py-1 text-left text-[0.625rem] font-sans font-medium text-fg-subtle">ACTION</th>
               {t.terminals.map((x) => (
                 <th key={x} className={cn("px-2 py-1", x === step.actionCell.terminal && "bg-accent/20")}>
                   <Sym s={x} />
@@ -379,7 +379,7 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
           </thead>
           <tbody>
             <tr>
-              <td className="px-2 py-1 font-semibold text-state">{st}</td>
+              <td className="px-2 py-1 font-semibold text-fg">{st}</td>
               {t.terminals.map((x) => {
                 const es = t.action[st].get(x);
                 const hit = x === step.actionCell.terminal;
@@ -388,7 +388,7 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
                     key={x}
                     className={cn(
                       "px-2 py-1 text-center",
-                      hit && (es ? (es.length > 1 ? "bg-conflict/25 ring-2 ring-inset ring-conflict" : "bg-accent/20 ring-2 ring-inset ring-accent") : "bg-conflict/25 ring-2 ring-inset ring-conflict"),
+                      hit && (es ? (es.length > 1 ? "bg-danger/25 ring-2 ring-inset ring-danger" : "bg-accent/20 ring-2 ring-inset ring-accent") : "bg-danger/25 ring-2 ring-inset ring-danger"),
                     )}
                   >
                     {es?.map((e, k) => (
@@ -396,7 +396,7 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
                         {k > 0 && "/"}
                         <ActionChip a={e.action} />
                       </React.Fragment>
-                    )) ?? (hit ? <span className="text-conflict">∅</span> : "")}
+                    )) ?? (hit ? <span className="text-danger">∅</span> : "")}
                   </td>
                 );
               })}
@@ -406,10 +406,10 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
       </div>
       {step.gotoCell && (
         <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-max min-w-full font-mono text-[12px]">
+          <table className="w-max min-w-full font-mono text-[0.75rem]">
             <thead className="bg-panel-2">
               <tr>
-                <th className="px-2 py-1 text-left text-[10px] font-sans font-medium text-fg-subtle">GOTO</th>
+                <th className="px-2 py-1 text-left text-[0.625rem] font-sans font-medium text-fg-subtle">GOTO</th>
                 {t.nonterminals.map((x) => (
                   <th key={x} className={cn("px-2 py-1", x === step.gotoCell!.nonterminal && "bg-accent/20")}>
                     <Sym s={x} />
@@ -419,11 +419,11 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
             </thead>
             <tbody>
               <tr>
-                <td className="px-2 py-1 font-semibold text-state">{step.gotoCell.state}</td>
+                <td className="px-2 py-1 font-semibold text-fg">{step.gotoCell.state}</td>
                 {t.nonterminals.map((x) => (
                   <td
                     key={x}
-                    className={cn("px-2 py-1 text-center text-state", x === step.gotoCell!.nonterminal && "bg-accent/20 ring-2 ring-inset ring-accent")}
+                    className={cn("px-2 py-1 text-center text-fg", x === step.gotoCell!.nonterminal && "bg-accent/20 ring-2 ring-inset ring-accent")}
                   >
                     {t.goto[step.gotoCell!.state].get(x)}
                   </td>
@@ -433,7 +433,7 @@ function TableLookup({ analysis, method, step }: { analysis: Analysis; method: P
           </table>
         </div>
       )}
-      <p className="flex items-center gap-1.5 text-[11px] text-fg-subtle">
+      <p className="flex items-center gap-1.5 text-[0.6875rem] text-fg-subtle">
         <Play className="size-3" /> {step.kind === "reduce" ? "After popping the handle, the exposed state's GOTO entry decides the next state." : "The top state and lookahead select one ACTION cell."}
       </p>
       <Badge tone={METHOD_META[method].tone}>{METHOD_META[method].label}</Badge>

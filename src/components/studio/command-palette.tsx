@@ -160,7 +160,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
           const header = i === 0 || results[i - 1].group !== r.group ? r.group : null;
           return (
             <React.Fragment key={r.id}>
-              {header && <div className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-fg-subtle">{header}</div>}
+              {header && <div className="px-2 pb-1 pt-2 text-xs font-medium text-fg-muted">{header}</div>}
               <button
                 type="button"
                 onMouseEnter={() => setActive(i)}
@@ -171,7 +171,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 )}
               >
                 {r.icon}
-                <span className="truncate font-mono text-[13px] text-fg">{r.label}</span>
+                <span className="truncate font-mono text-[0.8125rem] text-fg">{r.label}</span>
                 {r.detail && <span className="ml-auto truncate pl-4 text-xs text-fg-subtle">{r.detail}</span>}
               </button>
             </React.Fragment>

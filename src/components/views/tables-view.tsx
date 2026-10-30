@@ -116,9 +116,9 @@ export function TablesView() {
               </div>
             </div>
             <div className="max-h-[62vh] overflow-auto">
-              <table className="w-max min-w-full border-separate border-spacing-0 font-mono text-[13px]">
+              <table className="w-max min-w-full border-separate border-spacing-0 font-mono text-[0.8125rem]">
                 <thead className="sticky top-0 z-20">
-                  <tr className="bg-panel-2 text-[11px] uppercase tracking-wider text-fg-subtle">
+                  <tr className="font-medium bg-panel-2 text-xs text-fg-muted">
                     <th className="sticky left-0 z-10 border-b border-r border-border bg-panel-2 px-3 py-1.5" rowSpan={2}>
                       State
                     </th>
@@ -150,13 +150,13 @@ export function TablesView() {
                       <tr key={id} id={`row-${id}`} className={cn("group", rowSel && "bg-highlight-bg/40")}>
                         <td
                           className={cn(
-                            "sticky left-0 z-10 border-b border-r border-border bg-panel px-3 py-1 text-right font-semibold text-state group-hover:bg-panel-2",
+                            "sticky left-0 z-10 border-b border-r border-border bg-panel px-3 py-1 text-right font-semibold text-fg group-hover:bg-panel-2",
                             rowSel && "bg-panel-2",
                           )}
                         >
                           {id}
                           {method === "LALR" && st.mergedFrom && st.mergedFrom.length > 1 && (
-                            <span className="ml-1 text-[10px] font-normal text-lalr">({st.mergedFrom.join(",")})</span>
+                            <span className="ml-1 text-[0.625rem] font-normal text-accent">({st.mergedFrom.join(",")})</span>
                           )}
                         </td>
                         {t.terminals.map((x, i) => {
@@ -171,13 +171,13 @@ export function TablesView() {
                                 "border-b border-border/70 px-2 py-1 text-center",
                                 i === t.terminals.length - 1 && "border-r border-r-border",
                                 es && "cursor-pointer hover:bg-panel-2",
-                                isConf && "bg-conflict-bg",
+                                isConf && "bg-danger-bg",
                                 isSel && "outline-2 -outline-offset-2 outline-accent",
                               )}
                             >
                               {es?.map((e, k) => (
                                 <React.Fragment key={k}>
-                                  {k > 0 && <span className="text-conflict">/</span>}
+                                  {k > 0 && <span className="text-danger">/</span>}
                                   <ActionChip a={e.action} />
                                 </React.Fragment>
                               ))}
@@ -192,7 +192,7 @@ export function TablesView() {
                               key={x}
                               onClick={() => g !== undefined && setCell({ state: id, symbol: x })}
                               className={cn(
-                                "border-b border-border/70 px-2 py-1 text-center text-state",
+                                "border-b border-border/70 px-2 py-1 text-center text-fg",
                                 g !== undefined && "cursor-pointer hover:bg-panel-2",
                                 isSel && "outline-2 -outline-offset-2 outline-accent",
                               )}
@@ -213,7 +213,7 @@ export function TablesView() {
             <PanelHeader title="Production numbering" description="Shared by the SLR, CLR and LALR tables, the simulator and all explanations." />
             <div className="grid gap-x-6 gap-y-0.5 px-4 py-3 sm:grid-cols-2 lg:grid-cols-3">
               {a.grammar.productions.map((p) => (
-                <ProductionText key={p.id} p={p} numbered className="text-[13px]" />
+                <ProductionText key={p.id} p={p} numbered className="text-[0.8125rem]" />
               ))}
             </div>
           </Panel>
@@ -228,7 +228,7 @@ export function TablesView() {
               </div>
               <ul className="list-disc space-y-1.5 pl-4 text-xs">
                 <li>
-                  Item <span className="font-mono">A → α • a β</span> with GOTO(I, a) = J ⇒ <span className="font-mono text-shift">ACTION[I, a] = sJ</span>
+                  Item <span className="font-mono">A → α • a β</span> with GOTO(I, a) = J ⇒ <span className="font-mono text-fg">ACTION[I, a] = sJ</span>
                 </li>
                 <li>
                   Item <span className="font-mono">A → α •</span> ⇒ <span className="font-mono text-reduce">rN</span> on{" "}
@@ -239,7 +239,7 @@ export function TablesView() {
                   )}
                 </li>
                 <li>
-                  Item <span className="font-mono">S′ → S •</span> ⇒ <span className="font-mono text-accept">ACTION[I, $] = acc</span>
+                  Item <span className="font-mono">S′ → S •</span> ⇒ <span className="font-mono text-success">ACTION[I, $] = acc</span>
                 </li>
                 <li>GOTO(I, A) = J for nonterminal A ⇒ GOTO[I, A] = J</li>
                 <li>Two different actions in one cell are a conflict and are kept, not hidden.</li>
@@ -283,16 +283,16 @@ function CellExplanation({
       {symbol && (entries || gotoTarget !== undefined) && (
         <div className="border-b border-border p-4">
           <div className="mb-2 flex items-center gap-2 font-mono text-sm">
-            {entries ? "ACTION" : "GOTO"}[<span className="text-state">{state}</span>, <Sym s={symbol} />] =
+            {entries ? "ACTION" : "GOTO"}[<span className="text-fg">{state}</span>, <Sym s={symbol} />] =
             {entries ? (
               entries.map((e, k) => (
                 <React.Fragment key={k}>
-                  {k > 0 && <span className="text-conflict">/</span>}
+                  {k > 0 && <span className="text-danger">/</span>}
                   <ActionChip a={e.action} />
                 </React.Fragment>
               ))
             ) : (
-              <span className="font-semibold text-state">{gotoTarget}</span>
+              <span className="font-semibold text-fg">{gotoTarget}</span>
             )}
             {conflict && <Badge tone="danger">{conflict.type}</Badge>}
           </div>
@@ -332,7 +332,7 @@ function CellExplanation({
               </Button>
             )}
           </div>
-          <div className="mt-2 text-[11px] text-fg-subtle">
+          <div className="mt-2 text-[0.6875rem] text-fg-subtle">
             {entries?.map((e) => (e.action.type === "reduce" ? `r${e.action.prod}: ${formatProduction(g.productions[e.action.prod])}` : "")).filter(Boolean).join(" · ")}
           </div>
         </div>

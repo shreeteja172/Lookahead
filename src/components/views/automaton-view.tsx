@@ -15,7 +15,7 @@ export const METHOD_OPTIONS = (["SLR", "CLR", "LALR"] as ParserMethod[]).map((m)
   label: (
     <span>
       {METHOD_META[m].label}
-      <span className="ml-1 hidden text-[10px] text-fg-subtle sm:inline">{METHOD_META[m].automaton}</span>
+      <span className="ml-1 hidden text-[0.625rem] text-fg-subtle sm:inline">{METHOD_META[m].automaton}</span>
     </span>
   ),
   className: METHOD_META[m].color,

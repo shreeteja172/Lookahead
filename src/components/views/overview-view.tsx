@@ -86,7 +86,7 @@ function MethodCard({ m }: { m: ParserMethod }) {
           Automaton →
         </Link>
         {!s.conflictFree && (
-          <Link href="/conflicts" className="text-conflict hover:underline">
+          <Link href="/conflicts" className="text-danger hover:underline">
             Diagnose →
           </Link>
         )}
@@ -128,7 +128,7 @@ function CapabilityReport() {
         <div className="space-y-2.5">
           {verdicts.map((v) => (
             <div key={v.label} className="flex items-start gap-2.5">
-              {v.ok ? <CircleCheck className="mt-0.5 size-4 shrink-0 text-accept" /> : <CircleX className="mt-0.5 size-4 shrink-0 text-conflict" />}
+              {v.ok ? <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" /> : <CircleX className="mt-0.5 size-4 shrink-0 text-danger" />}
               <div className="text-sm">
                 <span className="font-medium">
                   {v.ok ? "Conflict-free" : "Has conflicts"} under {v.label}
@@ -176,7 +176,7 @@ function ClassDiagram({ cls }: { cls: "SLR" | "LALR" | "CLR" | "none" }) {
       className={cn("absolute rounded-xl border-2 transition-colors", cls === key ? "bg-highlight-bg" : "")}
       style={{ inset, borderColor: `var(--${color})` }}
     >
-      <span className="absolute left-2 top-1 text-[10px] font-semibold" style={{ color: `var(--${color})` }}>
+      <span className="absolute left-2 top-1 text-[0.625rem] font-semibold" style={{ color: `var(--${color})` }}>
         {label}
       </span>
     </div>
@@ -184,7 +184,7 @@ function ClassDiagram({ cls }: { cls: "SLR" | "LALR" | "CLR" | "none" }) {
   return (
     <div>
       <div className="relative mx-auto aspect-square w-full max-w-[220px] rounded-xl border border-dashed border-border-strong">
-        <span className="absolute left-2 top-1 text-[10px] text-fg-subtle">CFG</span>
+        <span className="absolute left-2 top-1 text-[0.625rem] text-fg-subtle">CFG</span>
         {ring("CLR", "LR(1)", 18, "clr")}
         {ring("LALR", "LALR(1)", 46, "lalr")}
         {ring("SLR", "SLR(1)", 74, "slr")}
@@ -269,10 +269,10 @@ function GrammarSummary({ warnings }: { warnings: number }) {
         </Row>
       </dl>
       <div className="border-t border-border px-4 py-3">
-        <div className="mb-1.5 text-[11px] uppercase tracking-wider text-fg-subtle">Productions</div>
+        <div className="font-medium mb-1.5 text-xs text-fg-muted">Productions</div>
         <div className="grid max-h-52 gap-0.5 overflow-y-auto">
           {g.productions.map((p) => (
-            <ProductionText key={p.id} p={p} numbered className="text-[13px]" />
+            <ProductionText key={p.id} p={p} numbered className="text-[0.8125rem]" />
           ))}
         </div>
       </div>

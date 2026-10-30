@@ -135,7 +135,7 @@ function CollectionReplay({ analysis, automaton, lr1 }: { analysis: Analysis; au
             icon={<CircleDot />}
             title={
               <>
-                State <span className="font-mono text-state">I{focusState}</span>
+                State <span className="font-mono text-fg">I{focusState}</span>
                 {cur.kind === "closure" && (
                   <span className="ml-2 text-xs font-normal text-fg-muted">
                     closure step {cur.n + 1} / {cur.of}
@@ -154,10 +154,10 @@ function CollectionReplay({ analysis, automaton, lr1 }: { analysis: Analysis; au
                   className={cn(
                     "flex items-center gap-2 rounded px-2 transition-colors",
                     k === newestKey && "bg-highlight-bg ring-1 ring-accent/60",
-                    k === sourceKey && "bg-lalr/10 ring-1 ring-lalr/40",
+                    k === sourceKey && "bg-panel-2 ring-1 ring-border-strong",
                   )}
                 >
-                  <span className="w-5 text-right font-mono text-[10px] text-fg-subtle">{i}</span>
+                  <span className="w-5 text-right font-mono text-[0.625rem] text-fg-subtle">{i}</span>
                   <ItemText grammar={g} item={it} showLookaheads={lr1} />
                   {it.kernel ? <Badge className="ml-auto">kernel</Badge> : k === newestKey ? <Badge tone="accent" className="ml-auto">new</Badge> : null}
                   {k === sourceKey && <Badge tone="lalr" className="ml-auto">source</Badge>}
@@ -207,7 +207,7 @@ function CollectionReplay({ analysis, automaton, lr1 }: { analysis: Analysis; au
               {cur.kind === "existing" && (
                 <>
                   <div className="mb-2 flex items-center gap-2 font-medium">
-                    <Repeat className="size-4 text-lalr" /> Transition to an existing state
+                    <Repeat className="size-4 text-accent" /> Transition to an existing state
                   </div>
                   <p className="text-xs text-fg-muted">
                     GOTO(I{cur.from}, <Sym s={cur.symbol} />) produces a kernel identical to I{cur.to}&apos;s, so no new state is created — only the
@@ -225,14 +225,14 @@ function CollectionReplay({ analysis, automaton, lr1 }: { analysis: Analysis; au
                   key={id}
                   className={cn(
                     "rounded-md border px-2 py-0.5 font-mono text-xs",
-                    id === focusState ? "border-accent bg-highlight-bg text-state" : "border-border bg-panel-2 text-fg-muted",
+                    id === focusState ? "border-accent bg-highlight-bg text-fg" : "border-border bg-panel-2 text-fg-muted",
                   )}
                 >
                   I{id}
                 </span>
               ))}
             </div>
-            <div className="max-h-40 overflow-y-auto border-t border-border px-4 py-2 font-mono text-[11px] text-fg-muted">
+            <div className="max-h-40 overflow-y-auto border-t border-border px-4 py-2 font-mono text-[0.6875rem] text-fg-muted">
               {created.edges
                 .slice()
                 .reverse()
@@ -297,10 +297,10 @@ function TableReplayInner({ analysis, method }: { analysis: Analysis; method: Pa
       </Panel>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Panel className="max-h-[60vh] overflow-auto">
-          <table className="w-max min-w-full border-separate border-spacing-0 font-mono text-[12.5px]">
+          <table className="w-max min-w-full border-separate border-spacing-0 font-mono text-[0.78125rem]">
             <thead className="sticky top-0 z-10 bg-panel-2">
               <tr>
-                <th className="sticky left-0 border-b border-r border-border bg-panel-2 px-2 py-1 text-[11px] text-fg-subtle">I</th>
+                <th className="sticky left-0 border-b border-r border-border bg-panel-2 px-2 py-1 text-[0.6875rem] text-fg-subtle">I</th>
                 {[...t.terminals, ...t.nonterminals].map((x) => (
                   <th key={x} className={cn("min-w-11 border-b border-border px-2 py-1", x === cur.symbol && "bg-accent/15")}>
                     <Sym s={x} />
@@ -311,7 +311,7 @@ function TableReplayInner({ analysis, method }: { analysis: Analysis; method: Pa
             <tbody ref={rowRef}>
               {t.automaton.states.map((row) => (
                 <tr key={row.id} data-row={row.id} className={cn(row.id === cur.state && "bg-highlight-bg/50")}>
-                  <td className="sticky left-0 border-b border-r border-border bg-panel px-2 py-0.5 text-right font-semibold text-state">{row.id}</td>
+                  <td className="sticky left-0 border-b border-r border-border bg-panel px-2 py-0.5 text-right font-semibold text-fg">{row.id}</td>
                   {[...t.terminals, ...t.nonterminals].map((x) => {
                     const v = filled.get(`${row.id}|${x}`);
                     const now = row.id === cur.state && x === cur.symbol;
@@ -320,14 +320,14 @@ function TableReplayInner({ analysis, method }: { analysis: Analysis; method: Pa
                         key={x}
                         className={cn(
                           "border-b border-border/60 px-2 py-0.5 text-center",
-                          v && v.length > 1 && "bg-conflict-bg text-conflict",
+                          v && v.length > 1 && "bg-danger-bg text-danger",
                           now && "outline-2 -outline-offset-2 outline-accent",
                         )}
                       >
                         {v?.map((a, k) => (
                           <span
                             key={k}
-                            className={cn(a.startsWith("s") ? "text-shift" : a.startsWith("r") ? "text-reduce" : a === "acc" ? "text-accept" : "text-state")}
+                            className={cn(a.startsWith("s") ? "text-fg" : a.startsWith("r") ? "text-reduce" : a === "acc" ? "text-success" : "text-fg")}
                           >
                             {k > 0 && "/"}
                             {a}
@@ -345,7 +345,7 @@ function TableReplayInner({ analysis, method }: { analysis: Analysis; method: Pa
           <PanelHeader icon={<Table2 />} title="Why this entry" />
           <div className="space-y-3 p-4 text-sm">
             <div className="font-mono">
-              {cur.entry ? "ACTION" : "GOTO"}[<span className="text-state">{cur.state}</span>, <Sym s={cur.symbol} />] ={" "}
+              {cur.entry ? "ACTION" : "GOTO"}[<span className="text-fg">{cur.state}</span>, <Sym s={cur.symbol} />] ={" "}
               <b>{cur.entry ? formatAction(cur.entry.action) : cur.gotoTarget}</b>
               {(filled.get(`${cur.state}|${cur.symbol}`)?.length ?? 0) > 1 && (
                 <Badge tone="danger" className="ml-2">
@@ -366,7 +366,7 @@ function TableReplayInner({ analysis, method }: { analysis: Analysis; method: Pa
                 {cur.symbol} exposes state {cur.state}.
               </p>
             )}
-            <div className="text-[11px] text-fg-subtle">
+            <div className="text-[0.6875rem] text-fg-subtle">
               Rule ({METHOD_META[method].label}):{" "}
               {method === "SLR" ? "reduce items use FOLLOW(A)" : method === "CLR" ? "reduce items use their own LR(1) lookaheads" : "reduce items use lookaheads united across merged CLR states"}
             </div>
@@ -397,7 +397,7 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
         <StepperControls s={s} label={<>core {s.index + 1} / {groups.length}</>} />
       </Panel>
       <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
-        <GitMerge className="size-4 text-lalr" />
+        <GitMerge className="size-4 text-accent" />
         {analysis.lr1.states.length} CLR states are partitioned into {groups.length} groups by LR(0) core; {totalMerged} group
         {totalMerged === 1 ? " has" : "s have"} more than one member.
         <div className="ml-auto flex flex-wrap gap-1">
@@ -407,7 +407,7 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
               onClick={() => (s.pause(), s.go(i))}
               className={cn(
                 "rounded border px-1.5 font-mono cursor-pointer",
-                i === s.index ? "border-accent bg-highlight-bg text-fg" : x.clrStates.length > 1 ? "border-lalr/40 text-lalr" : "border-border text-fg-subtle",
+                i === s.index ? "border-accent bg-highlight-bg text-fg" : x.clrStates.length > 1 ? "border-border-strong text-accent" : "border-border text-fg-subtle",
               )}
             >
               {x.clrStates.join("+")}
@@ -428,10 +428,10 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
           <div className="grid gap-px bg-border" style={{ gridTemplateColumns: `repeat(${Math.min(group.clrStates.length, 3)}, minmax(0, 1fr))` }}>
             {group.clrStates.map((id) => (
               <div key={id} className="bg-panel p-3">
-                <div className="mb-1 font-mono text-xs font-bold text-clr">CLR I{id}</div>
+                <div className="mb-1 font-mono text-xs font-bold text-fg">CLR I{id}</div>
                 {analysis.lr1.states[id].items.map((it, i) => (
                   <div key={i} className="whitespace-nowrap">
-                    <ItemText grammar={g} item={it} className="text-[12px]" />
+                    <ItemText grammar={g} item={it} className="text-[0.75rem]" />
                   </div>
                 ))}
               </div>
@@ -443,7 +443,7 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
             icon={<GitMerge />}
             title={
               <>
-                ⇒ LALR state <span className="font-mono text-lalr">I{group.lalrState}</span>
+                ⇒ LALR state <span className="font-mono text-accent">I{group.lalrState}</span>
               </>
             }
             description="Each item's lookahead set is the union over the merged states."
@@ -453,9 +453,9 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
               const origin = group.lookaheadOrigins[i];
               return (
                 <div key={i} className="flex flex-wrap items-baseline gap-x-2">
-                  <ItemText grammar={g} item={it} className="text-[12px]" />
+                  <ItemText grammar={g} item={it} className="text-[0.75rem]" />
                   {group.clrStates.length > 1 && (
-                    <span className="font-mono text-[10px] text-fg-subtle">
+                    <span className="font-mono text-[0.625rem] text-fg-subtle">
                       = {group.clrStates.map((c) => `{${origin.byState[c].join(",")}}`).join(" ∪ ")}
                     </span>
                   )}
@@ -465,9 +465,9 @@ function MergeReplay({ analysis }: { analysis: Analysis }) {
           </div>
           <div className="border-t border-border px-4 py-3 text-xs">
             {conflicts.length === 0 ? (
-              <span className="text-accept">No conflict in the merged state.</span>
+              <span className="text-success">No conflict in the merged state.</span>
             ) : (
-              <span className="text-conflict">
+              <span className="text-danger">
                 {conflicts.length} conflict{conflicts.length > 1 ? "s" : ""} in the merged state:{" "}
                 {conflicts.map((c) => `${c.type} on ${c.terminal}`).join(", ")}
                 {analysis.diagnoses.some((d) => d.conflict.method === "LALR" && d.conflict.state === group.lalrState && d.introducedByMerge) &&

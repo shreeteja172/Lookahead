@@ -1,85 +1,79 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
-@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
-
 /*
- * Design tokens. Dark is the default; [data-theme="light"] on <html> switches.
- * Semantic colours are shared by every view so terminals, nonterminals,
- * states, parser methods, conflicts and acceptance always look the same.
+ * Design tokens.
+ *
+ * The palette is intentionally small: neutrals, one accent for interaction and
+ * nonterminals, one colour for terminals, one for reduce actions, and status
+ * colours (success / danger / warning). Light is the default because it reads
+ * best on classroom projectors; [data-theme="dark"] on <html> switches.
  */
 :root {
-  --bg: #0b0d10;
-  --bg-elevated: #111419;
-  --panel: #14181e;
-  --panel-2: #191e25;
-  --border: #242a33;
-  --border-strong: #323a46;
-  --fg: #e6e9ee;
-  --fg-muted: #9aa3b2;
-  --fg-subtle: #6b7484;
-  --accent: #7c9cff;
-  --accent-fg: #0b0d10;
-  --ring: #7c9cff;
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f6f8fa;
+  --border: #e1e4e8;
+  --border-strong: #c9ced4;
+  --fg: #1f2328;
+  --fg-muted: #57606a;
+  --fg-subtle: #8a929b;
+  --accent: #0969da;
+  --accent-fg: #ffffff;
+  --ring: #0969da;
 
-  --terminal: #f5c26b;
-  --nonterminal: #7dd3fc;
-  --state: #c4b5fd;
-  --epsilon: #f0abfc;
-  --end: #fda4af;
+  --nonterminal: #0550ae;
+  --terminal: #953800;
+  --reduce: #8250df;
+  --success: #1a7f37;
+  --danger: #cf222e;
+  --warning: #9a6700;
 
-  --slr: #818cf8;
-  --clr: #d08cff;
-  --lalr: #2dd4bf;
+  --danger-bg: #ffebe9;
+  --success-bg: #dafbe1;
+  --warning-bg: #fff8c5;
+  --highlight-bg: #ddf4ff;
+  color-scheme: light;
+}
 
-  --shift: #60a5fa;
-  --reduce: #fbbf24;
-  --accept: #4ade80;
-  --conflict: #f87171;
-  --warning: #fbbf24;
-  --info: #7dd3fc;
+[data-theme="dark"] {
+  --bg: #0d1117;
+  --bg-elevated: #0d1117;
+  --panel: #0d1117;
+  --panel-2: #161b22;
+  --border: #30363d;
+  --border-strong: #484f58;
+  --fg: #e6edf3;
+  --fg-muted: #9198a1;
+  --fg-subtle: #6e7681;
+  --accent: #4493f8;
+  --accent-fg: #0d1117;
+  --ring: #4493f8;
 
-  --conflict-bg: rgba(248, 113, 113, 0.12);
-  --accept-bg: rgba(74, 222, 128, 0.12);
-  --highlight-bg: rgba(124, 156, 255, 0.16);
+  --nonterminal: #79c0ff;
+  --terminal: #ffa657;
+  --reduce: #bc8cff;
+  --success: #3fb950;
+  --danger: #f85149;
+  --warning: #d29922;
+
+  --danger-bg: rgba(248, 81, 73, 0.12);
+  --success-bg: rgba(63, 185, 80, 0.12);
+  --warning-bg: rgba(210, 153, 34, 0.12);
+  --highlight-bg: rgba(68, 147, 248, 0.14);
   color-scheme: dark;
 }
 
-[data-theme="light"] {
-  --bg: #f6f7f9;
-  --bg-elevated: #ffffff;
-  --panel: #ffffff;
-  --panel-2: #f1f3f6;
-  --border: #e2e6ec;
-  --border-strong: #cdd3dc;
-  --fg: #141820;
-  --fg-muted: #4f5868;
-  --fg-subtle: #7b8494;
-  --accent: #3b5bdb;
-  --accent-fg: #ffffff;
-  --ring: #3b5bdb;
-
-  --terminal: #b45309;
-  --nonterminal: #0369a1;
-  --state: #6d28d9;
-  --epsilon: #a21caf;
-  --end: #be123c;
-
-  --slr: #4f46e5;
-  --clr: #9333ea;
-  --lalr: #0f766e;
-
-  --shift: #2563eb;
-  --reduce: #b45309;
-  --accept: #15803d;
-  --conflict: #dc2626;
-  --warning: #b45309;
-  --info: #0369a1;
-
-  --conflict-bg: rgba(220, 38, 38, 0.08);
-  --accept-bg: rgba(21, 128, 61, 0.08);
-  --highlight-bg: rgba(59, 91, 219, 0.1);
-  color-scheme: light;
+/* Presentation sizes: every UI size is in rem, so this scales the whole studio. */
+html {
+  font-size: 16px;
+}
+html[data-scale="large"] {
+  font-size: 18px;
+}
+html[data-scale="projector"] {
+  font-size: 20px;
 }
 
 @theme inline {
@@ -95,22 +89,15 @@
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-ring: var(--ring);
-  --color-terminal: var(--terminal);
   --color-nonterminal: var(--nonterminal);
-  --color-state: var(--state);
-  --color-epsilon: var(--epsilon);
-  --color-end: var(--end);
-  --color-slr: var(--slr);
-  --color-clr: var(--clr);
-  --color-lalr: var(--lalr);
-  --color-shift: var(--shift);
+  --color-terminal: var(--terminal);
   --color-reduce: var(--reduce);
-  --color-accept: var(--accept);
-  --color-conflict: var(--conflict);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
   --color-warning: var(--warning);
-  --color-info: var(--info);
-  --color-conflict-bg: var(--conflict-bg);
-  --color-accept-bg: var(--accept-bg);
+  --color-danger-bg: var(--danger-bg);
+  --color-success-bg: var(--success-bg);
+  --color-warning-bg: var(--warning-bg);
   --color-highlight-bg: var(--highlight-bg);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code", monospace;
@@ -124,11 +111,11 @@ body {
 
 body {
   font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 * {
@@ -139,6 +126,15 @@ body {
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* React Flow theming */
@@ -152,21 +148,15 @@ body {
   --xy-controls-button-color: var(--fg);
   --xy-controls-button-border-color: var(--border);
   --xy-minimap-background-color: var(--panel);
-  --xy-minimap-mask-background-color: color-mix(in srgb, var(--bg) 70%, transparent);
-  --xy-node-border-radius: 10px;
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--panel-2) 70%, transparent);
+  --xy-node-border-radius: 6px;
 }
 .react-flow__attribution {
   display: none;
 }
-
-@keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
-  }
-  100% {
-    box-shadow: 0 0 0 8px transparent;
-  }
-}
-.pulse-ring {
-  animation: pulse-ring 1.2s ease-out infinite;
+.react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
 }

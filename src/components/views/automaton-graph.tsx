@@ -59,7 +59,7 @@ function StateNodeView({ data }: NodeProps<StateNode>) {
     <div
       className={cn(
         "rounded-[10px] border bg-panel text-left shadow-sm transition-[opacity,box-shadow,border-color]",
-        data.conflict ? "border-conflict" : data.accepting ? "border-accept/70" : "border-border-strong",
+        data.conflict ? "border-danger" : data.accepting ? "border-success/70" : "border-border-strong",
         data.selected && "ring-2 ring-accent shadow-lg",
         data.match && !data.selected && "ring-2 ring-warning",
         data.dimmed && "opacity-35",
@@ -70,16 +70,16 @@ function StateNodeView({ data }: NodeProps<StateNode>) {
       <div
         className={cn(
           "flex items-center gap-1.5 rounded-t-[9px] border-b px-2.5",
-          data.conflict ? "border-conflict/40 bg-conflict-bg" : "border-border bg-panel-2",
+          data.conflict ? "border-danger/40 bg-danger-bg" : "border-border bg-panel-2",
         )}
         style={{ height: HEADER_H }}
       >
-        <span className="font-mono text-[13px] font-bold text-state">{data.label}</span>
+        <span className="font-mono text-[13px] font-bold text-fg">{data.label}</span>
         {data.initial && <span className="rounded bg-accent/20 px-1 text-[10px] font-medium text-accent">start</span>}
-        {data.accepting && <span className="rounded bg-accept/20 px-1 text-[10px] font-medium text-accept">accept</span>}
-        {data.conflict && <span className="rounded bg-conflict/20 px-1 text-[10px] font-medium text-conflict">conflict</span>}
+        {data.accepting && <span className="rounded bg-success/20 px-1 text-[10px] font-medium text-success">accept</span>}
+        {data.conflict && <span className="rounded bg-danger/20 px-1 text-[10px] font-medium text-danger">conflict</span>}
         {state.mergedFrom && state.mergedFrom.length > 1 && (
-          <span className="ml-auto font-mono text-[10px] text-lalr">⟵ {state.mergedFrom.join(",")}</span>
+          <span className="ml-auto font-mono text-[10px] text-accent">⟵ {state.mergedFrom.join(",")}</span>
         )}
       </div>
       <div className="px-2.5 py-[7px]">

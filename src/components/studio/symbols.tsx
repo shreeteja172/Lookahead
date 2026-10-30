@@ -5,9 +5,9 @@ import { END, EPS, type Action, type Grammar, type LRItem, type ParserMethod, ty
 import { cn } from "@/lib/utils";
 
 export const METHOD_META: Record<ParserMethod, { label: string; long: string; color: string; tone: "slr" | "clr" | "lalr"; automaton: string }> = {
-  SLR: { label: "SLR(1)", long: "Simple LR", color: "text-slr", tone: "slr", automaton: "LR(0)" },
-  CLR: { label: "CLR(1)", long: "Canonical LR", color: "text-clr", tone: "clr", automaton: "LR(1)" },
-  LALR: { label: "LALR(1)", long: "Look-Ahead LR", color: "text-lalr", tone: "lalr", automaton: "LALR(1)" },
+  SLR: { label: "SLR(1)", long: "Simple LR", color: "text-fg", tone: "slr", automaton: "LR(0)" },
+  CLR: { label: "CLR(1)", long: "Canonical LR", color: "text-fg", tone: "clr", automaton: "LR(1)" },
+  LALR: { label: "LALR(1)", long: "Look-Ahead LR", color: "text-fg", tone: "lalr", automaton: "LALR(1)" },
 };
 
 const GrammarCtx = React.createContext<{ nonterminals: Set<string> } | null>(null);
@@ -18,8 +18,8 @@ export function GrammarProvider({ grammar, children }: { grammar: Grammar | null
 }
 
 export function symbolClass(sym: string, nonterminals: Set<string>): string {
-  if (sym === END) return "text-end";
-  if (sym === EPS) return "text-epsilon italic";
+  if (sym === END) return "text-fg-subtle";
+  if (sym === EPS) return "text-fg-subtle italic";
   return nonterminals.has(sym) ? "text-nonterminal" : "text-terminal";
 }
 
@@ -87,7 +87,7 @@ export function ItemText({
   const before = p.rhs.slice(0, item.dot);
   const after = p.rhs.slice(item.dot);
   return (
-    <span className={cn("font-mono text-[13px] leading-6", className)}>
+    <span className={cn("font-mono text-[0.8125rem] leading-6", className)}>
       <Sym s={p.lhs} />
       <span className="mx-1 text-fg-subtle">→</span>
       {before.map((s, i) => (
@@ -108,7 +108,7 @@ export function ItemText({
           {item.lookaheads.map((l, i) => (
             <React.Fragment key={l}>
               {i > 0 && <span className="text-fg-subtle">/</span>}
-              <Sym s={l} className={cn(highlightLookahead === l && "rounded bg-conflict/25 px-0.5")} />
+              <Sym s={l} className={cn(highlightLookahead === l && "rounded bg-danger-bg px-0.5 ring-1 ring-danger/40")} />
             </React.Fragment>
           ))}
         </span>
@@ -126,7 +126,7 @@ export function ActionChip({ a, className }: { a: Action; className?: string }) 
     <span
       className={cn(
         "font-mono font-semibold",
-        a.type === "shift" ? "text-shift" : a.type === "reduce" ? "text-reduce" : "text-accept",
+        a.type === "shift" ? "text-fg" : a.type === "reduce" ? "text-reduce" : "text-success",
         className,
       )}
     >
