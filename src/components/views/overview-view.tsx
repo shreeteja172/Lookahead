@@ -2,314 +2,238 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Check, CircleCheck, CircleX, Gauge, Info, Layers, TriangleAlert, X } from "lucide-react";
-import { formatProduction, METHODS, tableStats, type ParserMethod } from "@/lib/engine";
+import { ArrowRight, Check, Minus, X } from "lucide-react";
+import { METHODS, simulate, sortSymbols, tableStats, tokenizeInput, type Analysis, type ParserMethod } from "@/lib/engine";
 import { useAnalysis, useStudio } from "@/lib/studio/store";
-import { Badge, Panel, PanelHeader, Stat } from "@/components/ui/primitives";
+import { Button, Panel, PanelHeader } from "@/components/ui/primitives";
 import { NeedsGrammar, PageHeader } from "@/components/studio/page-header";
-import { METHOD_META, ProductionText, Sym } from "@/components/studio/symbols";
-import { NAV } from "@/components/studio/nav";
+import { METHOD_META, ProductionText, Sym, SymSet } from "@/components/studio/symbols";
+import { NAV, NAV_GROUPS } from "@/components/studio/nav";
 import { cn } from "@/lib/utils";
 
 export function OverviewView() {
   const analysis = useAnalysis();
   const projectName = useStudio((s) => s.projectName);
-  const diagnostics = useStudio((s) => s.result.parse.diagnostics);
 
   return (
     <>
       <PageHeader
-        title="Overview"
-        description={
-          <>
-            Parser capability report for <span className="text-fg">{projectName}</span>. Every number here is computed from the generated
-            automata and tables.
-          </>
+        title={projectName}
+        description="Build an LR parser for this grammar in five steps, or jump to the comparison and conflict analysis. Every result below is computed from the grammar."
+        actions={
+          <Link href="/grammar">
+            <Button>Edit grammar</Button>
+          </Link>
         }
       />
       {!analysis ? (
         <NeedsGrammar />
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            {METHODS.map((m) => (
-              <MethodCard key={m} m={m} />
-            ))}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+          <div className="grid content-start gap-6">
+            <GrammarCard a={analysis} />
+            <Classification a={analysis} />
           </div>
-          <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-            <CapabilityReport />
-            <GrammarSummary warnings={diagnostics.filter((d) => d.severity !== "error").length} />
-          </div>
-          <Modules />
+          <LearningPath a={analysis} />
         </div>
       )}
     </>
   );
 }
 
-function MethodCard({ m }: { m: ParserMethod }) {
-  const analysis = useAnalysis()!;
-  const t = analysis.tables[m];
-  const s = tableStats(t);
-  const meta = METHOD_META[m];
-  return (
-    <Panel className="relative overflow-hidden">
-      <div className={cn("absolute inset-x-0 top-0 h-0.5", m === "SLR" ? "bg-slr" : m === "CLR" ? "bg-clr" : "bg-lalr")} />
-      <div className="flex items-start justify-between gap-2 px-4 pt-4">
-        <div>
-          <div className={cn("text-lg font-semibold", meta.color)}>{meta.label}</div>
-          <div className="text-xs text-fg-subtle">
-            {meta.long} · {meta.automaton} automaton
-          </div>
-        </div>
-        {s.conflictFree ? (
-          <Badge tone="success">
-            <Check /> conflict-free
-          </Badge>
-        ) : (
-          <Badge tone="danger">
-            <X /> {t.conflicts.length} conflict{t.conflicts.length > 1 ? "s" : ""}
-          </Badge>
-        )}
-      </div>
-      <div className="grid grid-cols-4 gap-3 px-4 py-4">
-        <Stat label="States" value={s.states} />
-        <Stat label="Action" value={s.actionEntries} />
-        <Stat label="Goto" value={s.gotoEntries} />
-        <Stat label="S/R · R/R" value={`${s.shiftReduce}·${s.reduceReduce}`} tone={s.conflictFree ? "default" : "danger"} />
-      </div>
-      <div className="flex gap-3 border-t border-border px-4 py-2.5 text-xs">
-        <Link href="/tables" onClick={() => useStudio.getState().setMethod(m)} className="text-fg-muted hover:text-fg">
-          Table →
-        </Link>
-        <Link href="/automaton" onClick={() => useStudio.getState().setMethod(m)} className="text-fg-muted hover:text-fg">
-          Automaton →
-        </Link>
-        {!s.conflictFree && (
-          <Link href="/conflicts" className="text-danger hover:underline">
-            Diagnose →
-          </Link>
-        )}
-      </div>
-    </Panel>
-  );
-}
-
-function CapabilityReport() {
-  const a = useAnalysis()!;
-  const free = (m: ParserMethod) => a.tables[m].conflicts.length === 0;
-  const mergeInduced = a.diagnoses.filter((d) => d.conflict.method === "LALR" && d.introducedByMerge);
-  const cls = free("SLR") ? "SLR" : free("LALR") ? "LALR" : free("CLR") ? "CLR" : "none";
-
-  const verdicts: { label: string; ok: boolean; detail: string }[] = [
-    {
-      label: "SLR(1)",
-      ok: free("SLR"),
-      detail: free("SLR") ? "LR(0) automaton + FOLLOW sets produce a deterministic table." : `${a.tables.SLR.conflicts.length} conflicting cell(s) in the SLR table.`,
-    },
-    {
-      label: "LALR(1)",
-      ok: free("LALR"),
-      detail: free("LALR")
-        ? `Merging ${a.lr1.states.length} LR(1) states into ${a.lalr.states.length} kept the table deterministic.`
-        : `${a.tables.LALR.conflicts.length} conflicting cell(s) after merging.`,
-    },
-    {
-      label: "LR(1)",
-      ok: free("CLR"),
-      detail: free("CLR") ? `The canonical LR(1) table (${a.lr1.states.length} states) is deterministic.` : `${a.tables.CLR.conflicts.length} conflict(s) even with full LR(1) lookahead.`,
-    },
-  ];
-
-  return (
-    <Panel>
-      <PanelHeader icon={<Gauge />} title="Grammar capability analyzer" description="Which constructions handle this grammar without conflicts" />
-      <div className="grid gap-5 p-4 md:grid-cols-[1fr_220px]">
-        <div className="space-y-2.5">
-          {verdicts.map((v) => (
-            <div key={v.label} className="flex items-start gap-2.5">
-              {v.ok ? <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" /> : <CircleX className="mt-0.5 size-4 shrink-0 text-danger" />}
-              <div className="text-sm">
-                <span className="font-medium">
-                  {v.ok ? "Conflict-free" : "Has conflicts"} under {v.label}
-                </span>
-                <div className="text-xs text-fg-muted">{v.detail}</div>
-              </div>
-            </div>
-          ))}
-          <div className="flex items-start gap-2.5">
-            {mergeInduced.length ? (
-              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" />
-            ) : (
-              <Layers className="mt-0.5 size-4 shrink-0 text-fg-subtle" />
-            )}
-            <div className="text-sm">
-              <span className="font-medium">
-                {mergeInduced.length ? `LALR merging introduced ${mergeInduced.length} conflict(s)` : "LALR merging introduced no new conflicts"}
-              </span>
-              <div className="text-xs text-fg-muted">
-                {mergeInduced.length
-                  ? `In LALR state${mergeInduced.length > 1 ? "s" : ""} ${[...new Set(mergeInduced.map((d) => d.conflict.state))].join(", ")} — none of the merged CLR states conflicted on its own.`
-                  : `${a.mergeGroups.filter((g) => g.clrStates.length > 1).length} groups of CLR states with identical cores were merged.`}
-              </div>
-            </div>
-          </div>
-          <p className="mt-3 flex gap-2 rounded-lg border border-border bg-panel-2 p-3 text-xs leading-relaxed text-fg-muted">
-            <Info className="mt-0.5 size-3.5 shrink-0" />
-            <span>
-              This classification comes from the tables generated by the implemented algorithms, not from heuristics. A conflict-free table
-              proves the grammar is in that class, and LR(1) grammars are unambiguous. A conflict does <i>not</i> by itself prove ambiguity: the
-              grammar may simply need more lookahead than the method provides.
-            </span>
-          </p>
-        </div>
-        <ClassDiagram cls={cls} />
-      </div>
-    </Panel>
-  );
-}
-
-/** Nested grammar classes SLR(1) ⊂ LALR(1) ⊂ LR(1) with the grammar's position. */
-function ClassDiagram({ cls }: { cls: "SLR" | "LALR" | "CLR" | "none" }) {
-  const ring = (key: string, label: string, inset: number, color: string) => (
-    <div
-      className={cn("absolute rounded-xl border-2 transition-colors", cls === key ? "bg-highlight-bg" : "")}
-      style={{ inset, borderColor: `var(--${color})` }}
-    >
-      <span className="absolute left-2 top-1 text-[0.625rem] font-semibold" style={{ color: `var(--${color})` }}>
-        {label}
-      </span>
-    </div>
-  );
-  return (
-    <div>
-      <div className="relative mx-auto aspect-square w-full max-w-[220px] rounded-xl border border-dashed border-border-strong">
-        <span className="absolute left-2 top-1 text-[0.625rem] text-fg-subtle">CFG</span>
-        {ring("CLR", "LR(1)", 18, "clr")}
-        {ring("LALR", "LALR(1)", 46, "lalr")}
-        {ring("SLR", "SLR(1)", 74, "slr")}
-        <div
-          className="absolute size-3.5 -translate-x-1/2 rounded-full bg-accent pulse-ring"
-          style={
-            cls === "SLR"
-              ? { left: "50%", top: "58%" }
-              : cls === "LALR"
-                ? { left: "50%", top: "calc(100% - 66px)" }
-                : cls === "CLR"
-                  ? { left: "50%", top: "calc(100% - 38px)" }
-                  : { left: "50%", top: "calc(100% - 13px)" }
-          }
-          title="This grammar"
-        />
-      </div>
-      <div className="mt-2 text-center text-xs text-fg-muted">
-        {cls === "none" ? "Not LR(1): conflicts in every construction" : `Smallest class: ${cls === "CLR" ? "LR(1)" : `${cls}(1)`}`}
-      </div>
-    </div>
-  );
-}
-
-function GrammarSummary({ warnings }: { warnings: number }) {
-  const a = useAnalysis()!;
+function GrammarCard({ a }: { a: Analysis }) {
   const g = a.grammar;
-  const nullableProds = a.nullableProductions.filter((id) => id !== 0);
+  const nullable = [...a.ff.nullable].filter((n) => n !== g.augmentedStart);
+  const issues = [...a.unreachable, ...a.unproductive];
   return (
     <Panel>
       <PanelHeader
-        title="Grammar facts"
-        description={`${g.productions.length - 1} productions · ${g.nonterminals.length - 1} nonterminals · ${g.terminals.length} terminals`}
-        actions={warnings > 0 && <Badge tone="warning">{warnings} warning{warnings > 1 ? "s" : ""}</Badge>}
+        title="Grammar"
+        description={`${g.productions.length - 1} productions · ${g.nonterminals.length - 1} nonterminals · ${g.terminals.length} terminals · start symbol ${g.start}`}
       />
-      <dl className="grid gap-3 p-4 text-sm">
-        <Row label="Start symbol">
-          <Sym s={g.start} /> <span className="text-fg-subtle">(augmented: </span>
-          <ProductionText p={g.productions[0]} className="text-xs" />
-          <span className="text-fg-subtle">)</span>
-        </Row>
-        <Row label="Nullable">
-          {[...a.ff.nullable].filter((n) => n !== g.augmentedStart).length ? (
-            [...a.ff.nullable]
-              .filter((n) => n !== g.augmentedStart)
-              .map((n) => <Sym key={n} s={n} className="mr-2" />)
-          ) : (
-            <span className="text-fg-subtle">none</span>
-          )}
-        </Row>
-        <Row label="Nullable productions">
-          {nullableProds.length ? (
-            <span className="flex flex-col">
-              {nullableProds.map((id) => (
-                <ProductionText key={id} p={g.productions[id]} numbered className="text-xs" />
-              ))}
-            </span>
-          ) : (
-            <span className="text-fg-subtle">none</span>
-          )}
-        </Row>
-        <Row label="Unreachable">
-          {a.unreachable.length || a.unreachableTerminals.length ? (
-            [...a.unreachable, ...a.unreachableTerminals].map((n) => <Sym key={n} s={n} className="mr-2" />)
-          ) : (
-            <span className="text-fg-subtle">none</span>
-          )}
-        </Row>
-        <Row label="Unproductive">
-          {a.unproductive.length ? a.unproductive.map((n) => <Sym key={n} s={n} className="mr-2" />) : <span className="text-fg-subtle">none</span>}
-        </Row>
-        <Row label="Built in">
-          <span className="font-mono text-xs text-fg-muted">
-            {Object.values(a.timings)
-              .reduce((x, y) => x + y, 0)
-              .toFixed(1)}{" "}
-            ms
-          </span>
-          <span className="ml-2 text-xs text-fg-subtle" title={Object.entries(a.timings).map(([k, v]) => `${k}: ${v.toFixed(2)} ms`).join("\n")}>
-            (FIRST/FOLLOW, LR(0), LR(1), LALR, tables, conflicts)
-          </span>
-        </Row>
-      </dl>
-      <div className="border-t border-border px-4 py-3">
-        <div className="font-medium mb-1.5 text-xs text-fg-muted">Productions</div>
-        <div className="grid max-h-52 gap-0.5 overflow-y-auto">
-          {g.productions.map((p) => (
-            <ProductionText key={p.id} p={p} numbered className="text-[0.8125rem]" />
-          ))}
-        </div>
+      <div className="grid gap-1 px-4 py-3">
+        {g.productions.slice(1).map((p) => (
+          <ProductionText key={p.id} p={p} numbered className="text-[0.9375rem]" />
+        ))}
       </div>
-      <span className="sr-only">{g.productions.map(formatProduction).join("; ")}</span>
+      <dl className="grid gap-2 border-t border-border px-4 py-3 text-sm">
+        <Fact label="Terminals">
+          {g.terminals.map((t) => (
+            <Sym key={t} s={t} className="mr-2" />
+          ))}
+        </Fact>
+        <Fact label="Nonterminals">
+          {g.nonterminals.slice(1).map((n) => (
+            <Sym key={n} s={n} className="mr-2" />
+          ))}
+        </Fact>
+        <Fact label="Nullable">{nullable.length ? nullable.map((n) => <Sym key={n} s={n} className="mr-2" />) : <span className="text-fg-muted">none</span>}</Fact>
+        {issues.length > 0 && (
+          <Fact label="Useless symbols">
+            <span className="text-warning">
+              {a.unreachable.length > 0 && <>unreachable: {a.unreachable.join(", ")} </>}
+              {a.unproductive.length > 0 && <>non-generating: {a.unproductive.join(", ")}</>}
+            </span>
+          </Fact>
+        )}
+      </dl>
     </Panel>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[130px_1fr] items-baseline gap-2">
-      <dt className="text-xs text-fg-subtle">{label}</dt>
+    <div className="grid grid-cols-[110px_1fr] items-baseline gap-3">
+      <dt className="text-fg-muted">{label}</dt>
       <dd className="min-w-0 font-mono">{children}</dd>
     </div>
   );
 }
 
-function Modules() {
+const ORDER: { m: ParserMethod; name: string }[] = [
+  { m: "SLR", name: "SLR(1)" },
+  { m: "LALR", name: "LALR(1)" },
+  { m: "CLR", name: "Canonical LR(1)" },
+];
+
+function verdict(free: Record<ParserMethod, boolean>): string {
+  if (free.SLR) return "This grammar is SLR(1), so it is also LALR(1) and LR(1). All three parsers work.";
+  if (free.LALR) return "This grammar is LALR(1) but not SLR(1): FOLLOW sets are too coarse for SLR, while propagated lookaheads are precise enough.";
+  if (free.CLR) return "This grammar is LR(1) but not LALR(1): merging LR(1) states with equal cores creates conflicts.";
+  return "This grammar is not LR(1): every construction has conflicts. It may be ambiguous, or need more than one token of lookahead.";
+}
+
+function Classification({ a }: { a: Analysis }) {
+  const free = Object.fromEntries(METHODS.map((m) => [m, a.tables[m].conflicts.length === 0])) as Record<ParserMethod, boolean>;
+  const mergeInduced = a.diagnoses.filter((d) => d.conflict.method === "LALR" && d.introducedByMerge).length;
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {NAV.slice(1).map((n) => {
-        const Icon = n.icon;
-        return (
-          <Link
-            key={n.href}
-            href={n.href}
-            className="group flex items-start gap-3 rounded-xl border border-border bg-panel p-3.5 transition-colors hover:border-border-strong hover:bg-panel-2"
-          >
-            <Icon className="mt-0.5 size-4 text-accent" />
+    <Panel>
+      <PanelHeader title="Which parsers can handle it?" />
+      <p className="px-4 pt-3 text-[0.9375rem] leading-relaxed">{verdict(free)}</p>
+      <div className="overflow-x-auto px-4 py-3">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-xs text-fg-muted">
+              <th className="py-1.5 pr-3 font-medium">Method</th>
+              <th className="py-1.5 pr-3 font-medium">Automaton</th>
+              <th className="py-1.5 pr-3 text-right font-medium">States</th>
+              <th className="py-1.5 pr-3 text-right font-medium">Conflicts</th>
+              <th className="py-1.5 font-medium">Deterministic</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ORDER.map(({ m, name }) => {
+              const s = tableStats(a.tables[m]);
+              return (
+                <tr key={m} className="border-b border-border/70 last:border-0">
+                  <td className="py-2 pr-3 font-medium">{name}</td>
+                  <td className="py-2 pr-3 text-fg-muted">{METHOD_META[m].automaton} items</td>
+                  <td className="py-2 pr-3 text-right font-mono tabular-nums">{s.states}</td>
+                  <td className={cn("py-2 pr-3 text-right font-mono tabular-nums", !s.conflictFree && "text-danger")}>
+                    {s.conflictFree ? 0 : `${s.shiftReduce} S/R, ${s.reduceReduce} R/R`}
+                  </td>
+                  <td className="py-2">
+                    {s.conflictFree ? (
+                      <span className="inline-flex items-center gap-1 text-success">
+                        <Check className="size-4" /> yes
+                      </span>
+                    ) : (
+                      <Link href="/conflicts" className="inline-flex items-center gap-1 text-danger hover:underline">
+                        <X className="size-4" /> no — see why
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="space-y-1.5 border-t border-border px-4 py-3 text-xs leading-relaxed text-fg-muted">
+        <p>
+          Every SLR(1) grammar is LALR(1), and every LALR(1) grammar is LR(1). LALR merges the {a.lr1.states.length} canonical LR(1) states into{" "}
+          {a.lalr.states.length}
+          {mergeInduced > 0 ? `, which introduced ${mergeInduced} conflict${mergeInduced > 1 ? "s" : ""} here.` : "."}
+        </p>
+        <p>
+          A conflict-free table proves the grammar belongs to that class. A conflict does not by itself prove the grammar is ambiguous — it may
+          need more lookahead than the method provides.
+        </p>
+      </div>
+    </Panel>
+  );
+}
+
+function LearningPath({ a }: { a: Analysis }) {
+  const input = useStudio((s) => s.input);
+  const method = useStudio((s) => s.method);
+  const g = a.grammar;
+  const steps = NAV.filter((n) => n.step);
+
+  const run = React.useMemo(() => {
+    const tok = tokenizeInput(input, g.terminals);
+    if (tok.errors.length) return { text: tok.errors[0].message, ok: false };
+    const r = simulate(g, a.tables[method], tok.tokens);
+    return { text: `“${input.trim() || "ε"}” is ${r.outcome} by the ${METHOD_META[method].label} parser (${r.steps.length} steps).`, ok: r.outcome === "accepted" };
+  }, [input, method, g, a]);
+
+  const results: Record<number, React.ReactNode> = {
+    1: `${g.productions.length - 1} productions, augmented with ${g.augmentedStart} → ${g.start} as production 0.`,
+    2: (
+      <>
+        FOLLOW(<Sym s={g.start} />) = <SymSet symbols={sortSymbols(a.ff.follow.get(g.start)!, g.terminals)} />
+      </>
+    ),
+    3: `${a.lr0.states.length} LR(0) states, ${a.lr1.states.length} LR(1) states, ${a.lalr.states.length} LALR(1) states.`,
+    4: METHODS.every((m) => a.tables[m].conflicts.length === 0)
+      ? "All three tables are conflict-free."
+      : `Conflicts — SLR: ${a.tables.SLR.conflicts.length}, LALR: ${a.tables.LALR.conflicts.length}, CLR: ${a.tables.CLR.conflicts.length}.`,
+    5: run.text,
+  };
+  const learn: Record<number, string> = {
+    1: "Terminals, nonterminals, productions and the augmented start symbol.",
+    2: "Which terminals can begin, and which can follow, each nonterminal.",
+    3: "LR items, CLOSURE and GOTO — the states a parser can be in.",
+    4: "How shift, reduce and accept entries are derived from the items.",
+    5: "The stack-based shift-reduce loop and the parse tree it builds.",
+  };
+
+  return (
+    <Panel>
+      <PanelHeader title="Building the parser, step by step" description="Each step uses the result of the one before it." />
+      <ol>
+        {steps.map((n, i) => (
+          <li key={n.href} className={cn("relative flex gap-4 px-4 py-4", i > 0 && "border-t border-border")}>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-border-strong font-mono text-sm">{n.step}</span>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium">{n.label}</div>
-              <div className="text-xs text-fg-muted">{n.description}</div>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-[0.9375rem] font-semibold">{n.label}</h3>
+                <Link href={n.href} className="inline-flex items-center gap-1 text-sm text-accent hover:underline">
+                  Open <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+              <p className="text-sm text-fg-muted">{learn[n.step!]}</p>
+              <p className={cn("mt-1.5 text-sm", n.step === 5 && !run.ok && "text-danger")}>
+                <Minus className="mr-1 inline size-3 text-fg-subtle" />
+                {results[n.step!]}
+              </p>
             </div>
-            <ArrowRight className="size-4 text-fg-subtle opacity-0 transition-opacity group-hover:opacity-100" />
-          </Link>
-        );
-      })}
-    </div>
+          </li>
+        ))}
+      </ol>
+      <div className="border-t border-border px-4 py-4">
+        <h3 className="mb-2 text-sm font-semibold">Go further</h3>
+        <ul className="grid gap-1.5 text-sm sm:grid-cols-2">
+          {[...NAV_GROUPS[0].items.slice(1), ...NAV_GROUPS[2].items].map((n) => (
+            <li key={n.href}>
+              <Link href={n.href} className="text-accent hover:underline">
+                {n.label}
+              </Link>
+              <span className="text-fg-muted"> — {n.description}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Panel>
   );
 }
