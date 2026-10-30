@@ -13,3 +13,4 @@ export * from "./parser-simulator";
 export * from "./comparison-engine";
 export * from "./analysis";
 export * from "./samples";
+export * from "./derivation";
