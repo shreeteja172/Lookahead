@@ -21,21 +21,26 @@ npm run dev          # http://localhost:3000
 | `npm run lint` | ESLint |
 | `npm run build && npm start` | Production build and server |
 
-## Modules
+## Pages
 
-| # | Module | What you can do |
-|---|---|---|
-| 1 | **Overview** | Per-method state / entry / conflict counts, grammar capability analyzer, SLR ⊂ LALR ⊂ LR(1) class diagram, nullable / unreachable / unproductive symbols |
-| 2 | **Grammar Workbench** | Syntax-highlighted editor with line-level diagnostics, start-symbol override, augmented and numbered grammar, symbol table, verified sample grammars |
-| 3 | **FIRST / FOLLOW** | Final sets with a per-set derivation ("why is `)` in FOLLOW(T)?"), plus a step-by-step replay of the fixed-point iteration |
-| 4 | **LR Automaton** | Interactive graph of the real LR(0), LR(1) and LALR(1) state machines, with kernel and closure items, lookaheads, start/accept/conflict markers, search, zoom/fit and a state inspector |
-| 5 | **Parsing Tables** | ACTION/GOTO for each method; click any cell to see the item and the rule that produced it; filter, sort, CSV/JSON export |
-| 6 | **Simulation Studio** | Table-driven shift-reduce parsing with play/pause/step/reset and speed control, stack and input tape, highlighted table lookups, reduction handles, a live bottom-up parse tree, and trace export |
-| 7 | **Parser Comparison** | One input through all three parsers. Separates *grammar is conflict-free* from *this input is accepted*, aligns the three traces, and diffs SLR↔LALR and CLR↔LALR tables |
-| 8 | **Conflict Analyzer** | Every conflict with its competing items, why the lookahead is present (FOLLOW derivation or LR(1) lookahead), which methods share it, and whether **LALR merging introduced it** (with per-CLR-state lookahead origins) |
-| 9 | **Algorithm Explorer** | Replays FIRST/FOLLOW, LR(0) and LR(1) closure/GOTO/state creation, table insertion and CLR→LALR merging, explaining each step |
+The sidebar follows the order in which the topic is usually taught. Each step page opens with a short, collapsible concept note and ends with links to the previous and next step.
 
-Also included: dark/light theme, command palette (`Ctrl+K`) that searches pages, productions, states and table cells, keyboard shortcuts (`?`), a guided first-run tour, recent projects saved in the browser, project import/export, shareable links (`Share` copies a link whose URL fragment encodes the grammar as validated JSON), and a downloadable Markdown report.
+| Page | What it shows |
+|---|---|
+| **Overview** | The loaded grammar, one plain-language classification (SLR(1) / LALR(1) / LR(1) / not LR(1)) with a small comparison table, and the five steps with each step's live result |
+| **Concepts guide** | A short course on CFGs, derivations, ambiguity, bottom-up parsing, FIRST/FOLLOW, LR(0) and LR(1) items, the three methods and conflicts. Every example is computed from the loaded grammar |
+| **1 · Grammar** | Syntax-highlighted editor with line-level diagnostics, start-symbol override, augmented and numbered grammar, symbol table, and sample grammars grouped by their computed class |
+| **2 · FIRST & FOLLOW** | Final sets with a per-set derivation ("why is `)` in FOLLOW(T)?"), plus a step-by-step replay of the fixed-point iteration |
+| **3 · LR automaton** | Interactive graph of the real LR(0), LR(1) and LALR(1) state machines, with kernel and closure items, lookaheads, start/accept/conflict markers, search, zoom/fit and a state inspector |
+| **4 · Parsing table** | ACTION/GOTO for each method; click any cell to see the item and rule that produced it; filter, sort, CSV/JSON export |
+| **5 · Parse an input** | Shift-reduce parsing with play/pause/step/reset, the stack and input tape, highlighted table lookups, a bottom-up parse tree, and the **rightmost derivation**, which fills in as reductions happen |
+| **Compare parsers** | One input through all three parsers. Separates *grammar is conflict-free* from *this input is accepted*, aligns the traces, and diffs SLR↔LALR and CLR↔LALR tables |
+| **Conflicts** | Every conflict with its competing items, why the lookahead is present, which methods share it, and whether **LALR merging introduced it** |
+| **Step-through algorithms** | Replays FIRST/FOLLOW, LR(0) and LR(1) closure/GOTO/state creation, table insertion and CLR→LALR merging |
+
+**For the classroom:** the light theme is the default because it projects well, and the text-size button in the top bar (Normal, Large, Projector) scales the whole interface. Concept notes can be collapsed once the class has seen them.
+
+Also included: dark theme, command palette (`Ctrl+K`) that searches pages, productions, states and table cells, keyboard shortcuts (`?`), a short first-run tour, recent projects saved in the browser, project import/export, shareable links (`Share` copies a link whose URL fragment encodes the grammar as validated JSON), and a downloadable Markdown report.
 
 ## Grammar notation
 
@@ -74,6 +79,7 @@ src/lib/engine/            framework-independent parsing engine (no React import
   table-builder.ts         ACTION/GOTO for SLR, CLR, LALR + conflict detection
   conflict-analyzer.ts     conflict explanations and cross-method matching
   parser-simulator.ts      tokenizer + table-driven shift-reduce parser
+  derivation.ts            rightmost derivation recovered from an accepted parse
   comparison-engine.ts     table and trace diffs between methods
   analysis.ts              pipeline: grammar → sets → automata → tables → diagnoses
   samples.ts               sample grammars (claims verified by tests)
@@ -101,7 +107,7 @@ A conflict-free table proves the grammar is in that class, and LR(1) grammars ar
 
 ## Testing
 
-`npm test` runs 79 tests, including:
+`npm test` runs 82 tests, including:
 
 * grammar tokenization, validation, augmentation and error lines;
 * FIRST/FOLLOW for Dragon book Example 4.30, left recursion and nullable chains;
@@ -109,7 +115,7 @@ A conflict-free table proves the grammar is in that class, and LR(1) grammars ar
 * the **exact SLR table of Dragon Fig. 4.37** (12 states), the **CLR table for `S → C C`** (10 states) and its **LALR merge** into 7 states;
 * `S → L = R | R` (SLR conflict on `=`, LR(1) with 14 states, LALR with 10), and `S → a A d | b B d | a B e | b A e` (LR(1), but LALR merging introduces reduce-reduce conflicts);
 * ambiguous grammars (`E → E + E`, `S → S S`) and dangling-else detection;
-* the **simulation trace of Dragon Fig. 4.38**, empty input, invalid tokens, conflict policies and the step limit;
+* the **simulation trace of Dragon Fig. 4.38** and the rightmost derivation recovered from it, empty input, invalid tokens, conflict policies and the step limit;
 * every sample grammar's conflict-freedom, state counts and sample inputs;
 * share-link decoding and every export format.
 
