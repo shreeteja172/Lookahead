@@ -32,7 +32,7 @@ export function Modal({
       {open && (
         <motion.div
           className={cn(
-            "fixed inset-0 z-50 flex justify-center bg-black/50 p-4 backdrop-blur-[2px]",
+            "fixed inset-0 z-50 flex justify-center bg-black/40 p-4",
             align === "top" ? "items-start pt-[12vh]" : "items-center",
           )}
           initial={{ opacity: 0 }}
@@ -44,12 +44,12 @@ export function Modal({
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
             className={cn(
-              "relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-bg-elevated shadow-2xl",
+              "relative w-full max-w-lg overflow-hidden rounded-lg border border-border bg-panel shadow-xl",
               className,
             )}
           >
@@ -107,12 +107,12 @@ export function Popover({
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.1 }}
             className={cn(
-              "absolute top-full z-40 mt-1.5 min-w-56 rounded-lg border border-border bg-bg-elevated p-1 shadow-xl",
+              "absolute top-full z-40 mt-1.5 min-w-56 rounded-md border border-border bg-panel p-1 shadow-lg",
               align === "end" ? "right-0" : "left-0",
               className,
             )}

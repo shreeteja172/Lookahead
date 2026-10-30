@@ -10,6 +10,8 @@ import {
   type ParserMethod,
 } from "@/lib/engine";
 
+export type TextScale = "normal" | "large" | "projector";
+
 export interface SavedProject {
   id: string;
   name: string;
@@ -36,6 +38,8 @@ interface StudioState {
   policy: ConflictPolicy;
   method: ParserMethod;
   theme: "dark" | "light";
+  /** Base text size; "projector" is meant for classroom screens. */
+  scale: TextScale;
   tutorialSeen: boolean;
   projects: SavedProject[];
 
@@ -50,6 +54,7 @@ interface StudioState {
   setMethod: (m: ParserMethod) => void;
   setProjectName: (name: string) => void;
   setTheme: (t: "dark" | "light") => void;
+  setScale: (s: TextScale) => void;
   setTutorialSeen: (v: boolean) => void;
   loadProject: (p: Omit<SavedProject, "id" | "updatedAt"> & { id?: string; policy?: ConflictPolicy }) => void;
   newProject: () => void;
@@ -75,7 +80,8 @@ export const useStudio = create<StudioState>()(
       input: DEFAULT_SAMPLE.inputs[0].text,
       policy: "halt",
       method: "LALR",
-      theme: "dark",
+      theme: "light",
+      scale: "normal",
       tutorialSeen: false,
       projects: [],
       result: run(DEFAULT_SAMPLE.source, ""),
@@ -98,6 +104,7 @@ export const useStudio = create<StudioState>()(
       setMethod: (method) => set({ method }),
       setProjectName: (projectName) => set({ projectName }),
       setTheme: (theme) => set({ theme }),
+      setScale: (scale) => set({ scale }),
       setTutorialSeen: (tutorialSeen) => set({ tutorialSeen }),
       loadProject: (p) => {
         get().saveCurrent();
@@ -144,6 +151,7 @@ export const useStudio = create<StudioState>()(
         policy: s.policy,
         method: s.method,
         theme: s.theme,
+        scale: s.scale,
         tutorialSeen: s.tutorialSeen,
         projects: s.projects,
       }),

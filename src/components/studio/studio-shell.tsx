@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
 import {
   Check,
   CircleAlert,
@@ -20,9 +19,10 @@ import {
   Share2,
   Sun,
   Trash2,
+  Type,
   X,
 } from "lucide-react";
-import { METHODS } from "@/lib/engine";
+import { METHODS, type ParserMethod } from "@/lib/engine";
 import { useStudio } from "@/lib/studio/store";
 import { decodeSnapshot, encodeSnapshot, SHARE_PARAM } from "@/lib/studio/share";
 import { buildReport } from "@/lib/studio/export";
@@ -30,10 +30,10 @@ import { SITE } from "@/lib/site";
 import { cn, copyText, downloadText, slugify } from "@/lib/utils";
 import { Badge, Button, Kbd } from "@/components/ui/primitives";
 import { MenuItem, Popover } from "@/components/ui/overlay";
-import { NAV } from "./nav";
+import { NAV, NAV_GROUPS } from "./nav";
 import { CommandPalette } from "./command-palette";
 import { ShortcutsDialog, Tutorial } from "./help-dialogs";
-import { GrammarProvider, METHOD_META } from "./symbols";
+import { GrammarProvider } from "./symbols";
 
 const subscribeNoop = () => () => {};
 /** False during SSR and hydration, true afterwards — gates persisted client state. */
@@ -71,6 +71,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useStudio((s) => s.theme);
+  const scale = useStudio((s) => s.scale);
   const tutorialSeen = useStudio((s) => s.tutorialSeen);
   const setTutorialSeen = useStudio((s) => s.setTutorialSeen);
   const grammar = useStudio((s) => s.result.analysis?.grammar ?? null);
@@ -81,10 +82,12 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.scale = scale;
     try {
       localStorage.setItem("lookahead-theme", theme);
+      localStorage.setItem("lookahead-scale", scale);
     } catch {}
-  }, [theme]);
+  }, [theme, scale]);
 
   // Load a shared snapshot from the URL fragment (#s=…), then clean the URL.
   React.useEffect(() => {
@@ -144,25 +147,17 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <GrammarProvider grammar={grammar}>
       <div className="flex h-dvh overflow-hidden bg-bg text-fg">
-        <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-bg-elevated lg:flex">
+        <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-panel-2 lg:flex">
           <Sidebar pathname={pathname} />
         </aside>
-        <AnimatePresence>
-          {mobileNav && (
-            <motion.div className="fixed inset-0 z-40 lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="absolute inset-0 bg-black/50" onClick={() => setMobileNav(false)} />
-              <motion.aside
-                initial={{ x: -280 }}
-                animate={{ x: 0 }}
-                exit={{ x: -280 }}
-                transition={{ type: "tween", duration: 0.18 }}
-                className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-bg-elevated"
-              >
-                <Sidebar pathname={pathname} onNavigate={() => setMobileNav(false)} />
-              </motion.aside>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {mobileNav && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setMobileNav(false)} />
+            <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-panel-2">
+              <Sidebar pathname={pathname} onNavigate={() => setMobileNav(false)} />
+            </aside>
+          </div>
+        )}
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Toolbar
@@ -172,15 +167,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             onTour={() => setTourOpen(true)}
           />
           <main className="min-h-0 flex-1 overflow-y-auto">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18 }}
-              className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6"
-            >
-              {children}
-            </motion.div>
+            <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-8">{children}</div>
           </main>
         </div>
       </div>
@@ -191,68 +178,69 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Logo() {
-  return (
-    <svg viewBox="0 0 32 32" className="size-7" aria-hidden>
-      <rect x="1" y="1" width="30" height="30" rx="8" className="fill-accent/15 stroke-accent/50" strokeWidth="1" />
-      <circle cx="10" cy="16" r="3.2" className="fill-accent" />
-      <circle cx="22" cy="10" r="2.6" className="fill-lalr" />
-      <circle cx="22" cy="22" r="2.6" className="fill-clr" />
-      <path d="M13 15 L19.5 11 M13 17 L19.5 21" className="stroke-fg-muted" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function Sidebar({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   const result = useStudio((s) => s.result);
   const errors = result.parse.diagnostics.filter((d) => d.severity === "error").length;
   const conflicts = result.analysis?.diagnoses.length ?? 0;
   return (
     <>
-      <div className="flex h-14 items-center gap-2.5 border-b border-border px-4">
-        <Logo />
-        <div className="min-w-0">
-          <div className="text-sm font-semibold leading-tight">{SITE.name}</div>
-          <div className="truncate text-[11px] text-fg-subtle">{SITE.tagline}</div>
-        </div>
+      <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+        <Link href="/" onClick={onNavigate} className="min-w-0">
+          <div className="text-[0.9375rem] font-semibold tracking-tight">{SITE.name}</div>
+          <div className="truncate text-xs text-fg-muted">LR parsing studio</div>
+        </Link>
         {onNavigate && (
-          <button onClick={onNavigate} className="ml-auto rounded p-1 text-fg-subtle hover:text-fg cursor-pointer" aria-label="Close menu">
+          <button onClick={onNavigate} className="ml-auto rounded p-1 text-fg-muted hover:text-fg cursor-pointer" aria-label="Close menu">
             <X className="size-4" />
           </button>
         )}
       </div>
-      <nav className="flex-1 overflow-y-auto p-2">
-        {NAV.map((n, i) => {
-          const active = n.href === "/" ? pathname === "/" : pathname.startsWith(n.href);
-          const Icon = n.icon;
-          return (
-            <Link
-              key={n.href}
-              href={n.href}
-              onClick={onNavigate}
-              className={cn(
-                "group relative mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
-                active ? "bg-highlight-bg text-fg" : "text-fg-muted hover:bg-panel-2 hover:text-fg",
-              )}
-            >
-              {active && <motion.span layoutId="nav-active" className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-accent" />}
-              <Icon className={cn("size-4 shrink-0", active ? "text-accent" : "text-fg-subtle group-hover:text-fg-muted")} />
-              <span className="flex-1 truncate">{n.label}</span>
-              {n.href === "/grammar" && errors > 0 && <Badge tone="danger">{errors}</Badge>}
-              {n.href === "/conflicts" && conflicts > 0 && <Badge tone="danger">{conflicts}</Badge>}
-              <Kbd className="hidden opacity-0 group-hover:opacity-100 xl:inline-flex">{i + 1}</Kbd>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.title} className="mb-4">
+            <div className="px-2.5 pb-1 text-xs font-medium text-fg-muted">{group.title}</div>
+            {group.items.map((n) => {
+              const active = n.href === "/" ? pathname === "/" : pathname.startsWith(n.href);
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm",
+                    active ? "bg-panel font-medium text-fg ring-1 ring-border" : "text-fg-muted hover:bg-panel hover:text-fg",
+                  )}
+                >
+                  {n.step ? (
+                    <span
+                      className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-[0.6875rem]",
+                        active ? "border-accent text-accent" : "border-border-strong text-fg-muted",
+                      )}
+                    >
+                      {n.step}
+                    </span>
+                  ) : (
+                    <n.icon className="size-4 shrink-0 text-fg-muted" />
+                  )}
+                  <span className="flex-1 truncate">{n.label}</span>
+                  {n.href === "/grammar" && errors > 0 && <Badge tone="danger">{errors}</Badge>}
+                  {n.href === "/conflicts" && conflicts > 0 && <Badge tone="danger">{conflicts}</Badge>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
-      <div className="border-t border-border p-3 text-[11px] leading-relaxed text-fg-subtle">
-        <div className="mb-1.5 flex flex-wrap gap-x-3 gap-y-1">
-          <span><span className="text-nonterminal">■</span> nonterminal</span>
-          <span><span className="text-terminal">■</span> terminal</span>
-          <span><span className="text-state">■</span> state</span>
-          <span><span className="text-conflict">■</span> conflict</span>
+      <div className="border-t border-border px-4 py-3 text-xs leading-relaxed text-fg-muted">
+        <div className="mb-1">
+          <span className="font-mono text-nonterminal">E</span> nonterminal · <span className="font-mono text-terminal">id</span> terminal
         </div>
-        Compiler Design Lab · <a className="hover:text-fg" href={SITE.repo} target="_blank" rel="noreferrer">source</a>
+        Compiler Design Lab ·{" "}
+        <a className="underline-offset-2 hover:text-fg hover:underline" href={SITE.repo} target="_blank" rel="noreferrer">
+          source
+        </a>
       </div>
     </>
   );
@@ -302,7 +290,7 @@ function Toolbar({
     );
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-bg-elevated/80 px-3 backdrop-blur sm:px-4">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-panel px-3 sm:px-5">
       <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label="Open menu">
         <Menu />
       </Button>
@@ -322,15 +310,7 @@ function Toolbar({
             <CircleAlert /> too many states
           </Badge>
         ) : (
-          analysis &&
-          METHODS.map((m) => {
-            const ok = analysis.tables[m].conflicts.length === 0;
-            return (
-              <Badge key={m} tone={ok ? METHOD_META[m].tone : "danger"} title={ok ? `${m}: conflict-free` : `${m}: ${analysis.tables[m].conflicts.length} conflicts`}>
-                {ok ? <Check /> : <X />} {m}
-              </Badge>
-            );
-          })
+          analysis && <GrammarClassBadge free={Object.fromEntries(METHODS.map((m) => [m, analysis.tables[m].conflicts.length === 0])) as Record<ParserMethod, boolean>} />
         )}
       </div>
 
@@ -351,11 +331,37 @@ function Toolbar({
           {(close) => <ProjectsMenu close={close} onExport={exportProject} />}
         </Popover>
         <Button variant="ghost" size="icon" onClick={share} title="Copy shareable link" aria-label="Share">
-          {copied ? <Check className="text-accept" /> : <Share2 />}
+          {copied ? <Check className="text-success" /> : <Share2 />}
         </Button>
         <Button variant="ghost" size="icon" onClick={exportReport} disabled={!analysis} title="Download Markdown report" aria-label="Download report">
           <Download />
         </Button>
+        <Popover
+          trigger={({ toggle }) => (
+            <Button variant="ghost" size="icon" onClick={toggle} title="Text size for presenting" aria-label="Text size">
+              <Type />
+            </Button>
+          )}
+        >
+          {(close) => (
+            <>
+              <div className="px-2 pb-1 pt-1.5 text-xs font-medium text-fg-muted">Text size</div>
+              {(
+                [
+                  ["normal", "Normal", "Laptop screens"],
+                  ["large", "Large", "Small rooms, screen sharing"],
+                  ["projector", "Projector", "Classroom displays"],
+                ] as const
+              ).map(([v, label, hint]) => (
+                <MenuItem key={v} onClick={() => (s.setScale(v), close())}>
+                  <span className="w-4">{s.scale === v && <Check className="!text-accent" />}</span>
+                  <span>{label}</span>
+                  <span className="ml-auto text-xs text-fg-muted">{hint}</span>
+                </MenuItem>
+              ))}
+            </>
+          )}
+        </Popover>
         <Button
           variant="ghost"
           size="icon"
@@ -385,6 +391,22 @@ function Toolbar({
         </Popover>
       </div>
     </header>
+  );
+}
+
+/** One plain-language classification instead of three colour-coded badges. */
+function GrammarClassBadge({ free }: { free: Record<ParserMethod, boolean> }) {
+  const [label, tone, title] = free.SLR
+    ? (["SLR(1) grammar", "success", "No conflicts in any of the three tables."] as const)
+    : free.LALR
+      ? (["LALR(1), not SLR(1)", "neutral", "SLR has conflicts; LALR and canonical LR(1) do not."] as const)
+      : free.CLR
+        ? (["LR(1), not LALR(1)", "warning", "Only the canonical LR(1) table is conflict-free."] as const)
+        : (["Not LR(1)", "danger", "Every construction has conflicts."] as const);
+  return (
+    <Link href="/" title={title}>
+      <Badge tone={tone}>{label}</Badge>
+    </Link>
   );
 }
 
@@ -440,7 +462,7 @@ function ProjectsMenu({ close, onExport }: { close: () => void; onExport: () => 
         onChange={(e) => e.target.files?.[0] && importFile(e.target.files[0])}
       />
       <div className="my-1 border-t border-border" />
-      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] uppercase tracking-wider text-fg-subtle">
+      <div className="font-medium flex items-center gap-1.5 px-2 py-1 text-xs text-fg-muted">
         <History className="size-3" /> Recent (saved in this browser)
       </div>
       {projects.length === 0 && <div className="px-2 py-2 text-xs text-fg-subtle">Projects are saved automatically as you edit.</div>}
@@ -455,12 +477,12 @@ function ProjectsMenu({ close, onExport }: { close: () => void; onExport: () => 
               }}
             >
               <span className="truncate">{p.name}</span>
-              <span className="ml-auto shrink-0 text-[11px] text-fg-subtle">{new Date(p.updatedAt).toLocaleDateString()}</span>
+              <span className="ml-auto shrink-0 text-[0.6875rem] text-fg-subtle">{new Date(p.updatedAt).toLocaleDateString()}</span>
             </MenuItem>
             {p.id !== projectId && (
               <button
                 onClick={() => deleteProject(p.id)}
-                className="mr-1 rounded p-1 text-fg-subtle opacity-0 hover:text-conflict group-hover:opacity-100 cursor-pointer"
+                className="mr-1 rounded p-1 text-fg-subtle opacity-0 hover:text-danger group-hover:opacity-100 cursor-pointer"
                 aria-label={`Delete ${p.name}`}
               >
                 <Trash2 className="size-3.5" />

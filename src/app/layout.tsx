@@ -20,15 +20,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0d10",
+  themeColor: "#ffffff",
 };
 
-// Applies the saved theme before first paint to avoid a light/dark flash.
-const themeScript = `try{var t=localStorage.getItem("lookahead-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+// Applies the saved theme and text size before first paint to avoid a light/dark flash.
+const themeScript = `try{var d=document.documentElement,t=localStorage.getItem("lookahead-theme"),s=localStorage.getItem("lookahead-scale");if(t==="light"||t==="dark")d.dataset.theme=t;if(s)d.dataset.scale=s}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" data-theme="light" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
