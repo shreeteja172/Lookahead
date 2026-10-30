@@ -1,2 +1,8 @@
+# Dependencies allowed to run install scripts. pnpm 11 fails the install
+# (ERR_PNPM_IGNORED_BUILDS) for any package with a script that is not listed.
+allowBuilds:
+  # Pulled in by eslint-config-next; its postinstall checks the native binding.
+  unrs-resolver: true
+
 minimumReleaseAgeExclude:
   - lucide-react@1.64.0
