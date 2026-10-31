@@ -137,6 +137,13 @@ function TransitionEdge(props: EdgeProps<Edge<TransitionEdgeData>>) {
 }
 
 const nodeTypes = { state: StateNodeView };
+
+const MIN_ZOOM = 0.08;
+const MAX_ZOOM = 2.5;
+/** Zoom doubles per 1 / PINCH_SPEED pixels of pinch (wheel deltaY). */
+const PINCH_SPEED = 0.012;
+/** Largest deltaY used from a single event (a Ctrl + mouse-wheel notch is ~100). */
+const PINCH_MAX_STEP = 25;
 const edgeTypes = { transition: TransitionEdge };
 
 export interface AutomatonGraphProps {
@@ -223,6 +230,37 @@ function GraphInner(props: AutomatonGraphProps) {
     }
     return merged;
   }, [layoutMap, dragged]);
+
+  // Pinch zoom. Browsers report a trackpad pinch as wheel events with ctrlKey set.
+  // React Flow speeds these up tenfold only on macOS, so on Windows and Linux a
+  // pinch barely zooms. Handle pinch and Ctrl + wheel here at one consistent
+  // rate, zooming around the pointer, before React Flow sees the event.
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      const target = e.target as Element | null;
+      if (target?.closest(".react-flow__minimap, .react-flow__controls")) return;
+      const pane = el.querySelector(".react-flow")?.getBoundingClientRect();
+      if (!pane) return;
+      e.preventDefault();
+      e.stopPropagation();
+      // Normalise line/page deltas to pixels and cap each step, so one notch of a
+      // mouse wheel is a modest step while a pinch stays smooth.
+      const px = e.deltaY * (e.deltaMode === 1 ? 20 : e.deltaMode === 2 ? 400 : 1);
+      const step = Math.max(-PINCH_MAX_STEP, Math.min(PINCH_MAX_STEP, px));
+      const { x, y, zoom } = rfRef.current.getViewport();
+      const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * Math.pow(2, -step * PINCH_SPEED)));
+      if (next === zoom) return;
+      const cx = e.clientX - pane.left;
+      const cy = e.clientY - pane.top;
+      rfRef.current.setViewport({ x: cx - ((cx - x) * next) / zoom, y: cy - ((cy - y) * next) / zoom, zoom: next });
+    };
+    // Capture phase: runs before React Flow's own wheel handler on the pane.
+    el.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    return () => el.removeEventListener("wheel", onWheel, { capture: true });
+  }, []);
 
   // Entering or leaving full screen resizes the canvas; fit the graph to the new size.
   React.useEffect(() => {
@@ -361,8 +399,8 @@ function GraphInner(props: AutomatonGraphProps) {
         preventScrolling={fullscreen}
         nodesConnectable={false}
         elementsSelectable={false}
-        minZoom={0.08}
-        maxZoom={2}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         proOptions={{ hideAttribution: true }}
       >
         <Background gap={22} size={1} color="var(--border)" />
