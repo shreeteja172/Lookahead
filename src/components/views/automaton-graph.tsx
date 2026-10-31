@@ -20,7 +20,7 @@ import {
   type NodeChange,
   type NodeProps,
 } from "@xyflow/react";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
 import type { Automaton, Grammar, LRState } from "@/lib/engine";
 import { ItemText } from "@/components/studio/symbols";
 import { layoutGraph, type Box } from "@/lib/studio/automaton-layout";
@@ -149,10 +149,13 @@ export interface AutomatonGraphProps {
   showAll: boolean;
   lookaheads: boolean;
   centerOn: { id: number; nonce: number } | null;
+  /** The graph is shown full screen: there is no page to scroll, so scrolling pans. */
+  fullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 function GraphInner(props: AutomatonGraphProps) {
-  const { automaton, grammar, conflictStates, selected, matches, onSelect, showAll, lookaheads, centerOn } = props;
+  const { automaton, grammar, conflictStates, selected, matches, onSelect, showAll, lookaheads, centerOn, fullscreen, onToggleFullscreen } = props;
   const rf = useReactFlow();
   // The instance object can change identity between renders; effects use this ref.
   const rfRef = React.useRef(rf);
@@ -220,6 +223,12 @@ function GraphInner(props: AutomatonGraphProps) {
     }
     return merged;
   }, [layoutMap, dragged]);
+
+  // Entering or leaving full screen resizes the canvas; fit the graph to the new size.
+  React.useEffect(() => {
+    const t = setTimeout(() => rfRef.current.fitView({ padding: 0.08, duration: 250 }), 150);
+    return () => clearTimeout(t);
+  }, [fullscreen]);
 
   React.useEffect(() => {
     if (!layoutMap) return;
@@ -344,6 +353,12 @@ function GraphInner(props: AutomatonGraphProps) {
         onNodeClick={(_, n) => onSelect(Number(n.id))}
         onPaneClick={() => onSelect(null)}
         nodesDraggable
+        // A plain scroll scrolls the page; pinch (trackpad) or Ctrl + scroll zooms.
+        // In full screen a two-finger scroll pans the canvas instead.
+        zoomOnScroll={false}
+        zoomOnPinch
+        panOnScroll={fullscreen}
+        preventScrolling={fullscreen}
         nodesConnectable={false}
         elementsSelectable={false}
         minZoom={0.08}
@@ -355,15 +370,24 @@ function GraphInner(props: AutomatonGraphProps) {
           <button
             type="button"
             className="react-flow__controls-button"
-            title="Re-arrange and fit"
-            aria-label="Re-arrange and fit"
+            title="Re-arrange states and fit"
+            aria-label="Re-arrange states and fit"
             onClick={() => {
               onSelect(null);
               setDragged(null);
               rf.fitView({ padding: 0.1, duration: 250 });
             }}
           >
-            <Maximize2 className="size-3" />
+            <RotateCcw className="size-3" />
+          </button>
+          <button
+            type="button"
+            className="react-flow__controls-button"
+            title={fullscreen ? "Exit full screen (Esc)" : "Full screen"}
+            aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+            onClick={onToggleFullscreen}
+          >
+            {fullscreen ? <Minimize2 className="size-3" /> : <Maximize2 className="size-3" />}
           </button>
         </Controls>
         <MiniMap
